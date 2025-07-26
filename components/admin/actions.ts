@@ -156,7 +156,7 @@ export async function createProduct(formData: FormData) {
           category,
           subcategory,
           tags,
-          status,
+          status: status as "CONCEPT" | "ACTIEF" | "NIET_BESCHIKBAAR" | "VERVALLEN",
           isActive,
         },
       });
