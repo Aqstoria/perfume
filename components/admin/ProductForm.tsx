@@ -5,7 +5,6 @@ import { useState } from "react";
 import { z } from "zod";
 import { marked } from "marked";
 import BackButton from "@/components/ui/BackButton";
-import ImageUpload from "@/components/ui/ImageUpload";
 import BrandAutocomplete from "@/components/ui/BrandAutocomplete";
 import TagsInput from "@/components/ui/TagsInput";
 import { createProduct } from "./actions";
