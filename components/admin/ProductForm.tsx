@@ -688,12 +688,10 @@ export default function ProductForm({ csrfToken, session }: ProductFormProps) {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Product Afbeeldingen (max. 5)
                 </label>
-                <ImageUpload
-                  images={formData.afbeeldingen as string[]}
-                  onImagesChange={(images: string[]) => handleInputChange("afbeeldingen", images)}
-                  maxImages={5}
-                  productId={undefined} // Will be generated for new products
-                />
+                {/* Temporarily disabled for debugging */}
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <p className="text-gray-500">Image upload temporarily disabled</p>
+                </div>
                 {errors.afbeeldingen && (
                   <p className="mt-1 text-sm text-red-600">{errors.afbeeldingen}</p>
                 )}
