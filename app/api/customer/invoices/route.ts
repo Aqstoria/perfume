@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         orderItems: {
           select: {
             quantity: true,
-            unitPrice: true,
+            price: true,
           },
         },
       },
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
     // Calculate totals and format data
     const invoices = orders.map((order) => {
       const totalAmount = order.orderItems.reduce(
-        (sum, item) => sum + item.quantity * item.unitPrice,
+        (sum, item) => sum + item.quantity * Number(item.price),
         0,
       );
 

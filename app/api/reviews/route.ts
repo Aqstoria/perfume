@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       productId: parsed.productId,
       customerId,
       rating: parsed.rating,
-      title: parsed.title,
+      ...(parsed.title && { title: parsed.title }),
       comment: parsed.comment,
       status: "PENDING",
     },

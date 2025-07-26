@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { ProductStatus } from "@prisma/client";
 
 // Zod schema for rollback request
 const rollbackSchema = z.object({
@@ -68,27 +69,55 @@ export async function POST(request: NextRequest) {
       // Restore from snapshot if available
       if (snapshot.snapshotData && Array.isArray(snapshot.snapshotData)) {
         for (const entityData of snapshot.snapshotData) {
+          if (
+            !entityData ||
+            typeof entityData !== "object" ||
+            Array.isArray(entityData) ||
+            !("id" in entityData)
+          ) {
+            continue;
+          }
           if (importHistory.entityType === "Product") {
             await tx.product.create({
               data: {
-                id: entityData.id,
-                name: entityData.name,
-                brand: entityData.brand,
-                content: entityData.content,
-                ean: entityData.ean,
-                purchasePrice: entityData.purchasePrice,
-                retailPrice: entityData.retailPrice,
-                stockQuantity: entityData.stockQuantity,
-                maxOrderableQuantity: entityData.maxOrderableQuantity,
-                starRating: entityData.starRating,
-                category: entityData.category,
-                subcategory: entityData.subcategory,
-                description: entityData.description,
-                tags: entityData.tags,
-                status: entityData.status,
-                isActive: entityData.isActive,
-                createdAt: entityData.createdAt,
-                updatedAt: entityData.updatedAt,
+                id: String(entityData.id),
+                name: String(entityData.name),
+                brand: String(entityData.brand),
+                content: String(entityData.content),
+                ean: String(entityData.ean),
+                purchasePrice: Number(entityData.purchasePrice) || 0,
+                retailPrice: Number(entityData.retailPrice) || 0,
+                stockQuantity:
+                  entityData.stockQuantity !== undefined && entityData.stockQuantity !== null
+                    ? Number(entityData.stockQuantity)
+                    : 0,
+                maxOrderableQuantity:
+                  entityData.maxOrderableQuantity !== undefined
+                    ? Number(entityData.maxOrderableQuantity)
+                    : null,
+                starRating:
+                  entityData.starRating !== undefined && entityData.starRating !== null
+                    ? Number(entityData.starRating)
+                    : 0,
+                category: entityData.category !== undefined ? String(entityData.category) : null,
+                subcategory:
+                  entityData.subcategory !== undefined ? String(entityData.subcategory) : null,
+                description:
+                  entityData.description !== undefined ? String(entityData.description) : null,
+                tags: Array.isArray(entityData.tags) ? entityData.tags.map(String) : [],
+                status: Object.values(ProductStatus).includes(entityData.status as ProductStatus)
+                  ? (entityData.status as ProductStatus)
+                  : ProductStatus.ACTIEF,
+                isActive:
+                  entityData.isActive !== undefined && entityData.isActive !== null
+                    ? Boolean(entityData.isActive)
+                    : true,
+                createdAt: entityData.createdAt
+                  ? new Date(entityData.createdAt as string)
+                  : new Date(),
+                updatedAt: entityData.updatedAt
+                  ? new Date(entityData.updatedAt as string)
+                  : new Date(),
               },
             });
             entitiesRestored++;
@@ -102,7 +131,7 @@ export async function POST(request: NextRequest) {
           importId,
           rolledBackBy: session.user.id,
           entitiesRestored,
-          rollbackReason,
+          rollbackReason: rollbackReason ?? null,
         },
       });
 
@@ -120,7 +149,7 @@ export async function POST(request: NextRequest) {
             rollbackReason,
             fileName: importHistory.fileName,
           },
-          ipAddress: request.headers.get("x-forwarded-for") || request.ip,
+          ipAddress: request.headers.get("x-forwarded-for"),
           userAgent: request.headers.get("user-agent"),
         },
       });

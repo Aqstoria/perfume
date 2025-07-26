@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/middleware-utils";
 
 // DELETE /api/admin/reviews/[id]/delete
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;

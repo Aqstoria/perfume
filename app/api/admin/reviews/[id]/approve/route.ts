@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/middleware-utils";
 import { auth } from "@/lib/auth";
 
 // POST /api/admin/reviews/[id]/approve
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   await requireAdmin();
   const session = await auth();

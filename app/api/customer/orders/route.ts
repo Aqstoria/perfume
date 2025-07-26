@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
                 id: true,
                 name: true,
                 brand: true,
-                imageUrl: true,
               },
             },
           },
@@ -57,7 +56,7 @@ export async function GET(request: NextRequest) {
     // Calculate totals for each order
     const ordersWithTotals = orders.map((order) => {
       const totalAmount = order.orderItems.reduce(
-        (sum, item) => sum + item.quantity * item.unitPrice,
+        (sum, item) => sum + item.quantity * Number(item.price),
         0,
       );
 

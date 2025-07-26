@@ -31,7 +31,6 @@ export default function BuyerDashboardPage() {
     );
   }
 
-  
   if (!session || session.user?.role !== "BUYER") {
     return null;
   }
@@ -134,19 +133,19 @@ export default function BuyerDashboardPage() {
         );
 
       case "orders":
-        return <OrderHistory customerId={session.user.id} />;
+        return <OrderHistory />;
 
       case "reviews":
-        return <ReviewManagement customerId={session.user.id} />;
+        return <ReviewManagement />;
 
       case "pricing":
-        return <PricingSummary customerId={session.user.id} />;
+        return <PricingSummary />;
 
       case "notifications":
-        return <NotificationCenter customerId={session.user.id} />;
+        return <NotificationCenter />;
 
       case "downloads":
-        return <Downloads customerId={session.user.id} />;
+        return <Downloads />;
 
       default:
         return (

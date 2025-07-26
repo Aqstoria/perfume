@@ -71,16 +71,16 @@ pnpm prisma db seed
    ```env
    # Database
    DATABASE_URL=your-database-connection-string
-   
+
    # Authentication
    NEXTAUTH_SECRET=your-secret-key-here
    NEXTAUTH_URL=https://your-domain.vercel.app
-   
+
    # Supabase (if using)
    NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
    SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
-   
+
    # Sentry (optional)
    SENTRY_DSN=your-sentry-dsn
    ```
@@ -92,16 +92,19 @@ pnpm prisma db seed
 ### Method B: Vercel CLI
 
 1. **Install Vercel CLI**
+
    ```bash
    npm i -g vercel
    ```
 
 2. **Login to Vercel**
+
    ```bash
    vercel login
    ```
 
 3. **Deploy**
+
    ```bash
    vercel
    ```
@@ -114,9 +117,11 @@ pnpm prisma db seed
 ## Step 4: Post-Deployment Setup
 
 ### 1. Update NEXTAUTH_URL
+
 After deployment, update your `NEXTAUTH_URL` environment variable to your actual Vercel domain.
 
 ### 2. Run Database Migrations
+
 ```bash
 # Connect to your Vercel project
 vercel env pull .env.local
@@ -126,6 +131,7 @@ pnpm prisma migrate deploy
 ```
 
 ### 3. Seed Database (Optional)
+
 ```bash
 # Run seed script
 pnpm prisma db seed
@@ -141,15 +147,15 @@ pnpm prisma db seed
 
 ## Environment Variables Reference
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | Yes |
-| `NEXTAUTH_SECRET` | Secret for NextAuth.js | Yes |
-| `NEXTAUTH_URL` | Your app's URL | Yes |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | No |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | No |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key | No |
-| `SENTRY_DSN` | Sentry error tracking | No |
+| Variable                        | Description                  | Required |
+| ------------------------------- | ---------------------------- | -------- |
+| `DATABASE_URL`                  | PostgreSQL connection string | Yes      |
+| `NEXTAUTH_SECRET`               | Secret for NextAuth.js       | Yes      |
+| `NEXTAUTH_URL`                  | Your app's URL               | Yes      |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase project URL         | No       |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key       | No       |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Supabase service role key    | No       |
+| `SENTRY_DSN`                    | Sentry error tracking        | No       |
 
 ## Troubleshooting
 
@@ -229,4 +235,4 @@ pnpm prisma db seed
 
 ---
 
-**Note**: This deployment guide assumes you have already pushed your code to GitHub. If you haven't, please follow the GitHub setup instructions first. 
+**Note**: This deployment guide assumes you have already pushed your code to GitHub. If you haven't, please follow the GitHub setup instructions first.

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { calculateProductPrice } from "@/lib/pricing";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     // Check authentication
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     const reviewStatsData =
-      reviewStats.length > 0
+      reviewStats.length > 0 && reviewStats[0]
         ? {
             averageRating: reviewStats[0]._avg.rating || 0,
             totalReviews: reviewStats[0]._count.id,

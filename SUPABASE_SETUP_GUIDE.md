@@ -95,11 +95,13 @@ Visit `http://localhost:3000` and test the application.
 ## Troubleshooting
 
 ### Connection Issues
+
 - Verify your `DATABASE_URL` is correct
 - Check that your database password is correct
 - Ensure your IP is not blocked by firewall
 
 ### Migration Issues
+
 ```bash
 # Reset database (WARNING: This will delete all data)
 pnpm prisma migrate reset
@@ -109,6 +111,7 @@ pnpm prisma migrate dev --name init
 ```
 
 ### Prisma Issues
+
 ```bash
 # Regenerate Prisma client
 pnpm prisma generate
@@ -137,4 +140,4 @@ When deploying to Vercel:
 
 - **Supabase Documentation**: [supabase.com/docs](https://supabase.com/docs)
 - **Prisma Documentation**: [prisma.io/docs](https://prisma.io/docs)
-- **Next.js Documentation**: [nextjs.org/docs](https://nextjs.org/docs) 
+- **Next.js Documentation**: [nextjs.org/docs](https://nextjs.org/docs)

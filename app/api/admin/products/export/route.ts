@@ -57,15 +57,17 @@ export async function POST(request: NextRequest) {
     }
 
     if (filters.minRating || filters.maxRating) {
-      (where as Record<string, unknown>).starRating = {};
-      if (filters.minRating) (where as Record<string, unknown>).starRating.gte = filters.minRating;
-      if (filters.maxRating) (where as Record<string, unknown>).starRating.lte = filters.maxRating;
+      const starRatingFilter: Record<string, unknown> = {};
+      if (filters.minRating) starRatingFilter.gte = filters.minRating;
+      if (filters.maxRating) starRatingFilter.lte = filters.maxRating;
+      (where as Record<string, unknown>).starRating = starRatingFilter;
     }
 
     if (filters.minPrice || filters.maxPrice) {
-      (where as Record<string, unknown>).retailPrice = {};
-      if (filters.minPrice) (where as Record<string, unknown>).retailPrice.gte = filters.minPrice;
-      if (filters.maxPrice) (where as Record<string, unknown>).retailPrice.lte = filters.maxPrice;
+      const retailPriceFilter: Record<string, unknown> = {};
+      if (filters.minPrice) retailPriceFilter.gte = filters.minPrice;
+      if (filters.maxPrice) retailPriceFilter.lte = filters.maxPrice;
+      (where as Record<string, unknown>).retailPrice = retailPriceFilter;
     }
 
     if (filters.search) {
@@ -220,12 +222,12 @@ export async function POST(request: NextRequest) {
             exportFormat: format.toUpperCase(),
             fileName: filename,
             fileSize: fileBuffer.length,
-            parameters: {
+            parameters: JSON.stringify({
               format,
               columns,
               filters,
               includePricing,
-            } as unknown as Record<string, unknown>,
+            }),
             recordCount: products.length,
             status: "SUCCESS",
           },

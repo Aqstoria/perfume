@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import PDFDocument from "pdfkit";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     const session = await auth();
@@ -54,32 +55,34 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       margin: 50,
     });
 
-    // Set response headers
-    const response = new NextResponse(
-      new ReadableStream({
-        start(controller) {
-          doc.pipe({
-            write(chunk: Uint8Array) {
-              controller.enqueue(chunk);
-            },
-            end() {
-              controller.close();
-            },
-          });
-        },
-      }),
-      {
-        headers: {
-          "Content-Type": "application/pdf",
-          "Content-Disposition": `attachment; filename="order-${orderId.slice(-8)}.pdf"`,
-        },
-      },
-    );
-
     // Generate PDF content
     generateInvoicePDF(doc, order);
 
+    // Create a buffer to store the PDF
+    const chunks: Buffer[] = [];
+    doc.on("data", (chunk: Buffer) => {
+      chunks.push(chunk);
+    });
+
+    // End the document
     doc.end();
+
+    // Wait for the PDF to be generated
+    await new Promise<void>((resolve) => {
+      doc.on("end", () => {
+        resolve();
+      });
+    });
+
+    // Create response with the PDF buffer
+    const buffer = Buffer.concat(chunks);
+    const response = new NextResponse(buffer, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="order-${orderId.slice(-8)}.pdf"`,
+      },
+    });
+
     return response;
   } catch (error) {
     console.error("Error generating PDF:", error);
@@ -87,7 +90,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
-function generateInvoicePDF(doc: Record<string, unknown>, order: Record<string, unknown>) {
+function generateInvoicePDF(doc: any, order: any) {
   const { customer, orderItems, createdAt, status } = order;
 
   // Header
@@ -156,8 +159,8 @@ function generateInvoicePDF(doc: Record<string, unknown>, order: Record<string, 
   let currentY = tableTop + 20;
   let subtotal = 0;
 
-  orderItems.forEach((item: Record<string, unknown>) => {
-    const itemTotal = item.quantity * item.unitPrice;
+  orderItems.forEach((item: any) => {
+    const itemTotal = item.quantity * Number(item.price);
     subtotal += itemTotal;
 
     doc
@@ -166,7 +169,7 @@ function generateInvoicePDF(doc: Record<string, unknown>, order: Record<string, 
       .text(item.product.name, itemCodeX, currentY)
       .text(item.product.brand, descriptionX, currentY)
       .text(item.quantity.toString(), quantityX, currentY)
-      .text(formatPrice(item.unitPrice), priceX, currentY)
+      .text(formatPrice(Number(item.price)), priceX, currentY)
       .text(formatPrice(itemTotal), totalX, currentY);
 
     currentY += 20;

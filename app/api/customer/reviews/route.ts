@@ -35,7 +35,6 @@ export async function GET(request: NextRequest) {
             id: true,
             name: true,
             brand: true,
-            imageUrl: true,
           },
         },
       },
@@ -76,7 +75,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const customerId = session.user.id;
-    const { reviewId, title, content, rating } = await request.json();
+    const { reviewId, title, comment, rating } = await request.json();
 
     // Verify the review belongs to this customer and is still pending
     const existingReview = await prisma.review.findFirst({
@@ -96,7 +95,7 @@ export async function PUT(request: NextRequest) {
       where: { id: reviewId },
       data: {
         title,
-        content,
+        comment,
         rating,
         updatedAt: new Date(),
       },

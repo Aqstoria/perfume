@@ -6,7 +6,6 @@ import { z } from "zod";
 // Validation schema for user updates
 const updateUserSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters").optional(),
-  email: z.string().email("Invalid email address").optional(),
   role: z.enum(["ADMIN", "BUYER"]).optional(),
   isActive: z.boolean().optional(),
 });
@@ -43,24 +42,17 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       }
     }
 
-    if (validatedData.email && validatedData.email !== existingUser.email) {
-      const existingUserByEmail = await prisma.user.findUnique({
-        where: { email: validatedData.email },
-      });
-
-      if (existingUserByEmail) {
-        return NextResponse.json({ error: "EMAIL_EXISTS" }, { status: 400 });
-      }
-    }
-
     // Update user
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: validatedData,
+      data: {
+        ...(validatedData.username && { username: validatedData.username }),
+        ...(validatedData.role && { role: validatedData.role }),
+        ...(validatedData.isActive !== undefined && { isActive: validatedData.isActive }),
+      },
       select: {
         id: true,
         username: true,
-        email: true,
         role: true,
         isActive: true,
         createdAt: true,
@@ -84,7 +76,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
@@ -121,7 +113,7 @@ export async function DELETE(
   }
 }
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     // Check authentication and admin role
@@ -136,7 +128,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       select: {
         id: true,
         username: true,
-        email: true,
         role: true,
         isActive: true,
         createdAt: true,

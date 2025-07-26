@@ -80,9 +80,11 @@ vercel
 ## Step 4: Post-Deployment Setup
 
 ### 1. Update NEXTAUTH_URL
+
 After deployment, update `NEXTAUTH_URL` in Vercel dashboard to your actual domain.
 
 ### 2. Run Database Migrations
+
 ```bash
 # Connect to your Vercel project
 vercel env pull .env.local
@@ -95,34 +97,38 @@ pnpm prisma db seed
 ```
 
 ### 3. Test Your Application
+
 Visit your Vercel domain and test the application.
 
 ## Environment Variables for Vercel
 
 Add these to your Vercel project settings:
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | Your database connection string | Yes |
-| `NEXTAUTH_SECRET` | Secret for NextAuth.js | Yes |
-| `NEXTAUTH_URL` | Your app's URL (update after deployment) | Yes |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (if using Supabase) | No |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | No |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key | No |
+| Variable                        | Description                              | Required |
+| ------------------------------- | ---------------------------------------- | -------- |
+| `DATABASE_URL`                  | Your database connection string          | Yes      |
+| `NEXTAUTH_SECRET`               | Secret for NextAuth.js                   | Yes      |
+| `NEXTAUTH_URL`                  | Your app's URL (update after deployment) | Yes      |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase project URL (if using Supabase) | No       |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key                   | No       |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Supabase service role key                | No       |
 
 ## Troubleshooting
 
 ### Build Errors
+
 - Check that `DATABASE_URL` is correct
 - Ensure all environment variables are set
 - Verify `pnpm` is used in build command
 
 ### Database Connection Issues
+
 - Verify your database allows external connections
 - Check SSL settings if required
 - Test connection locally first
 
 ### Authentication Issues
+
 - Update `NEXTAUTH_URL` to your production domain
 - Ensure `NEXTAUTH_SECRET` is set
 - Check redirect URLs in NextAuth configuration
@@ -159,4 +165,4 @@ vercel env add NEXTAUTH_URL
 
 ---
 
-**Note**: Make sure your database is accessible from Vercel's servers and all environment variables are properly configured. 
+**Note**: Make sure your database is accessible from Vercel's servers and all environment variables are properly configured.

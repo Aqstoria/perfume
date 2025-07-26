@@ -16,12 +16,8 @@ export async function GET() {
     const customer = await prisma.customer.findUnique({
       where: { id: customerId },
       include: {
-        categoryPricing: {
-          include: {
-            category: true,
-          },
-        },
-        productPricing: {
+        customerMargins: true,
+        customerPrices: {
           include: {
             product: {
               select: {
@@ -67,39 +63,40 @@ export async function GET() {
 
     // Calculate pricing statistics
     const pricingStats = {
-      generalMargin: customer.marginPercentage,
+      generalMargin: customer.generalMargin,
       totalOrders: recentOrders.length,
       averageOrderValue:
         recentOrders.length > 0
           ? recentOrders.reduce((sum, order) => {
               const orderTotal = order.orderItems.reduce(
-                (itemSum, item) => itemSum + item.quantity * item.unitPrice,
+                (itemSum, item) => itemSum + item.quantity * Number(item.price),
                 0,
               );
               return sum + orderTotal;
             }, 0) / recentOrders.length
           : 0,
-      categoryOverrides: customer.categoryPricing.length,
-      productOverrides: customer.productPricing.length,
+      categoryOverrides: customer.customerMargins.length,
+      productOverrides: customer.customerPrices.length,
     };
 
     // Get category pricing summary
-    const categoryPricing = customer.categoryPricing.map((cp) => ({
-      categoryId: cp.categoryId,
-      categoryName: cp.category.name,
-      marginPercentage: cp.marginPercentage,
-      isOverride: cp.marginPercentage !== customer.marginPercentage,
+    const categoryPricing = customer.customerMargins.map((cm) => ({
+      categoryId: cm.category,
+      categoryName: cm.category,
+      marginPercentage: cm.margin,
+      isOverride: Number(cm.margin) !== Number(customer.generalMargin),
     }));
 
     // Get product pricing summary (limited to 10 most recent)
-    const productPricing = customer.productPricing.slice(0, 10).map((pp) => ({
-      productId: pp.productId,
-      productName: pp.product.name,
-      productBrand: pp.product.brand,
-      retailPrice: pp.product.retailPrice,
-      customerPrice: pp.price,
-      discount: pp.product.retailPrice - pp.price,
-      discountPercentage: ((pp.product.retailPrice - pp.price) / pp.product.retailPrice) * 100,
+    const productPricing = customer.customerPrices.slice(0, 10).map((cp) => ({
+      productId: cp.productId,
+      productName: cp.product.name,
+      productBrand: cp.product.brand,
+      retailPrice: cp.product.retailPrice,
+      customerPrice: cp.price,
+      discount: Number(cp.product.retailPrice) - Number(cp.price),
+      // prettier-ignore
+      discountPercentage: ((Number(cp.product.retailPrice) - Number(cp.price)) / Number(cp.product.retailPrice)) * 100,
     }));
 
     return NextResponse.json({
@@ -107,8 +104,7 @@ export async function GET() {
         id: customer.id,
         name: customer.name,
         email: customer.email,
-        marginPercentage: customer.marginPercentage,
-        hiddenCategories: customer.hiddenCategories,
+        marginPercentage: customer.generalMargin,
       },
       pricingStats,
       categoryPricing,
@@ -118,7 +114,7 @@ export async function GET() {
         createdAt: order.createdAt,
         status: order.status,
         totalAmount: order.orderItems.reduce(
-          (sum, item) => sum + item.quantity * item.unitPrice,
+          (sum, item) => sum + item.quantity * Number(item.price),
           0,
         ),
         itemCount: order.orderItems.length,
