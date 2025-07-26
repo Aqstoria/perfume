@@ -29,7 +29,7 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
     console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
