@@ -209,7 +209,10 @@ export async function createProduct(formData: FormData) {
   } catch (error: unknown) {
     // Outer catch voor onverwachte fouten
     console.error("🛑 Onverwachte fout in createProduct:", error);
-    console.error("📋 Stack trace:", (error as Record<string, unknown>)?.stack || "Geen stack trace beschikbaar");
+    console.error(
+      "📋 Stack trace:",
+      (error as Record<string, unknown>)?.stack || "Geen stack trace beschikbaar"
+    );
     console.error("🔍 Error details:", {
       name: (error as Record<string, unknown>)?.name,
       message: (error as Record<string, unknown>)?.message,
