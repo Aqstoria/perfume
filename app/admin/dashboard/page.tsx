@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 import { getAuditLogs } from "@/lib/audit";
 import { serializeDate } from "@/lib/utils";
 import DashboardClient from "./DashboardClient";
-import { Prisma } from "@prisma/client";
 
 interface AuditLog {
   id: string;
