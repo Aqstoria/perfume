@@ -142,7 +142,7 @@ export default function BuyerDashboardPage() {
         return <PricingSummary customerId={session.user.customerId!} />;
 
       case "notifications":
-        return <NotificationCenter />;
+        return <NotificationCenter customerId={session.user.customerId!} />;
 
       case "downloads":
         return <Downloads />;
