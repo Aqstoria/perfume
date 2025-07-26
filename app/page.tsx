@@ -24,7 +24,7 @@ export default function Home() {
               <h2 className="text-2xl font-semibold text-gray-800 mb-4">Welkom terug!</h2>
               <div className="text-left space-y-2 text-gray-600">
                 <p>
-                  <strong>Email:</strong> {session.user?.email}
+                  <strong>Username:</strong> {session.user?.username}
                 </p>
                 <p>
                   <strong>Role:</strong> {session.user?.role}
