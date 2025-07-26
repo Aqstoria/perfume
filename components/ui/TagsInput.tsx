@@ -69,7 +69,7 @@ export default function TagsInput({
           <input
             type="text"
             value={inputValue}
-            onChange={(e) => handleInputChange(e.target.value)}
+            onChange={(e) => handleInputChange(e.target.value || "")}
             onKeyDown={handleKeyDown}
             placeholder={tags.length === 0 ? placeholder : ""}
             className="flex-1 min-w-[120px] outline-none text-sm"
