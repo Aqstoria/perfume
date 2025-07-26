@@ -2,11 +2,16 @@
 
 import { useEffect, useState, createContext, useContext } from "react";
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<{ outcome: "accepted" | "dismissed" }>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
 interface PWAContextType {
   isOnline: boolean;
   isInstalled: boolean;
   canInstall: boolean;
-  installPrompt: unknown;
+  installPrompt: BeforeInstallPromptEvent | null;
   registerServiceWorker: () => Promise<ServiceWorkerRegistration | void>;
   requestNotificationPermission: () => Promise<boolean>;
   sendNotification: (title: string, options?: NotificationOptions) => void;
@@ -31,7 +36,7 @@ export function PWAProvider({ children }: PWAProviderProps) {
   const [isOnline, setIsOnline] = useState(true);
   const [isInstalled, setIsInstalled] = useState(false);
   const [canInstall, setCanInstall] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<unknown>(null);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   // Check if app is installed
   useEffect(() => {
@@ -44,7 +49,7 @@ export function PWAProvider({ children }: PWAProviderProps) {
     checkInstallation();
     window.addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
-      setInstallPrompt(e);
+      setInstallPrompt(e as BeforeInstallPromptEvent);
       setCanInstall(true);
     });
   }, []);
