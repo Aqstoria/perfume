@@ -54,10 +54,8 @@ export default function ProductExportDialog({
     const baseFilters: ExportFilters = { availability: "all" };
 
     if (currentFilters) {
-      return {
+      const filters: ExportFilters = {
         ...baseFilters,
-        search: currentFilters.search,
-        brand: currentFilters.brand,
         availability:
           currentFilters.availability === "available"
             ? ("in_stock" as const)
@@ -65,6 +63,15 @@ export default function ProductExportDialog({
               ? ("out_of_stock" as const)
               : ("all" as const),
       };
+
+      if (currentFilters.search) {
+        filters.search = currentFilters.search;
+      }
+      if (currentFilters.brand) {
+        filters.brand = currentFilters.brand;
+      }
+
+      return filters;
     }
 
     return baseFilters;
