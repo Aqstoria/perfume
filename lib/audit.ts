@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "./prisma";
+import { Prisma } from "@prisma/client";
 
 export type AuditAction =
   | "CREATE"
@@ -90,7 +91,7 @@ export async function createAuditLog(data: AuditLogData, request?: Request) {
         action: data.action,
         entity: data.entity,
         entityId: data.entityId || null,
-        details: data.details || {},
+        details: (data.details || {}) as Prisma.JsonValue,
         ipAddress,
         userAgent,
       },
