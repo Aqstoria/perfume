@@ -211,7 +211,7 @@ export async function createProduct(formData: FormData) {
     console.error("🛑 Onverwachte fout in createProduct:", error);
     console.error(
       "📋 Stack trace:",
-      (error as Record<string, unknown>)?.stack || "Geen stack trace beschikbaar"
+      (error as Record<string, unknown>)?.stack || "Geen stack trace beschikbaar",
     );
     console.error("🔍 Error details:", {
       name: (error as Record<string, unknown>)?.name,
