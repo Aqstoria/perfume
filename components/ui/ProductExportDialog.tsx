@@ -171,17 +171,24 @@ export default function ProductExportDialog({
     const baseFilters: ExportFilters = { availability: "all" };
 
     if (currentFilters) {
-      setFilters({
+      const filters: ExportFilters = {
         ...baseFilters,
-        search: currentFilters.search,
-        brand: currentFilters.brand,
         availability:
           currentFilters.availability === "available"
-            ? "in_stock"
+            ? ("in_stock" as const)
             : currentFilters.availability === "outOfStock"
-              ? "out_of_stock"
-              : "all",
-      });
+              ? ("out_of_stock" as const)
+              : ("all" as const),
+      };
+
+      if (currentFilters.search) {
+        filters.search = currentFilters.search;
+      }
+      if (currentFilters.brand) {
+        filters.brand = currentFilters.brand;
+      }
+
+      setFilters(filters);
     } else {
       setFilters(baseFilters);
     }
