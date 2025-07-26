@@ -60,10 +60,10 @@ export default function ProductExportDialog({
         brand: currentFilters.brand,
         availability:
           currentFilters.availability === "available"
-            ? "in_stock"
+            ? ("in_stock" as const)
             : currentFilters.availability === "outOfStock"
-              ? "out_of_stock"
-              : "all",
+              ? ("out_of_stock" as const)
+              : ("all" as const),
       };
     }
 
