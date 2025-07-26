@@ -14,7 +14,7 @@ interface AuditLog {
   action: string;
   entity: string;
   entityId: string | null;
-  details: Prisma.JsonValue;
+  details: Record<string, unknown>;
   ipAddress: string | null;
   userAgent: string | null;
   createdAt: Date;
@@ -31,7 +31,7 @@ interface SerializedAuditLog {
   action: string;
   entity: string;
   entityId: string | null;
-  details: Prisma.JsonValue;
+  details: Record<string, unknown>;
   ipAddress: string | null;
   userAgent: string | null;
   createdAt: string; // Serialized as ISO string
