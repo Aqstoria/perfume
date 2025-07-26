@@ -91,7 +91,7 @@ export async function createAuditLog(data: AuditLogData, request?: Request) {
         action: data.action,
         entity: data.entity,
         entityId: data.entityId || null,
-        details: (data.details || {}) as Prisma.JsonValue,
+        details: data.details || {},
         ipAddress,
         userAgent,
       },
