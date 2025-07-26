@@ -689,7 +689,7 @@ export default function ProductForm({ csrfToken, session }: ProductFormProps) {
                   Product Afbeeldingen (max. 5)
                 </label>
                 <ImageUpload
-                  images={formData.afbeeldingen}
+                  images={formData.afbeeldingen as string[]}
                   onImagesChange={(images: string[]) => handleInputChange("afbeeldingen", images)}
                   maxImages={5}
                   productId={undefined} // Will be generated for new products
