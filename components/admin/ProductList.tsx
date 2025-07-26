@@ -519,7 +519,6 @@ export function ProductList({ products }: ProductListProps) {
           search: searchTerm,
           brand: selectedBrand,
           content: selectedContent,
-          status: selectedStatus,
           availability: availabilityFilter,
         }}
       />
