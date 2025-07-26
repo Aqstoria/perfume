@@ -39,6 +39,29 @@ export interface AuditLogData {
   userAgent?: string;
 }
 
+export interface AuditLogsResponse {
+  logs: Array<{
+    id: string;
+    userId: string | null;
+    action: string;
+    entity: string;
+    entityId: string | null;
+    details: Record<string, unknown>;
+    ipAddress: string | null;
+    userAgent: string | null;
+    createdAt: Date;
+    user?: {
+      id: string;
+      username: string;
+      role: string;
+    } | null;
+  }>;
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 /**
  * Create an audit log entry
  */
@@ -213,7 +236,7 @@ export async function getAuditLogs(options: {
   endDate?: Date;
   page?: number;
   limit?: number;
-}) {
+}): Promise<AuditLogsResponse> {
   const { userId, action, entity, entityId, startDate, endDate, page = 1, limit = 50 } = options;
 
   const where: {
