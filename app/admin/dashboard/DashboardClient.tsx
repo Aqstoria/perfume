@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import { formatDateForDisplay } from "@/lib/utils";
 import BulkExportDialog from "@/components/ui/BulkExportDialog";
 import { MobileNavigation } from "@/components/ui/MobileNavigation";
-import { Prisma } from "@prisma/client";
 
 interface AuditLog {
   id: string;
@@ -14,7 +13,7 @@ interface AuditLog {
   action: string;
   entity: string;
   entityId: string | null;
-  details: Prisma.JsonValue;
+  details: Record<string, unknown>;
   ipAddress: string | null;
   userAgent: string | null;
   createdAt: string; // Now a string (ISO format)
