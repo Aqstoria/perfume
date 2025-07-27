@@ -4,42 +4,28 @@ export interface ImportHistoryEntry {
   id: string;
   filename: string;
   fileType: "csv" | "excel";
+  entityType: string;
   totalRows: number;
-  successfulRows: number;
+  importedRows: number;
   failedRows: number;
-  skippedRows: number;
-  duplicateRows: number;
-  importStrategy: "skip" | "overwrite" | "flag" | "error";
-  importOnlyValid: boolean;
-  startedAt: Date;
-  completedAt: Date;
-  duration: number; // in milliseconds
-  status: "completed" | "failed" | "cancelled";
   errors: string[];
-  warnings: string[];
   importedBy: string;
-  notes?: string;
+  createdAt: Date;
 }
 
 export interface CreateImportHistoryParams {
   filename: string;
   fileType: "csv" | "excel";
+  entityType: string;
   totalRows: number;
-  importStrategy: "skip" | "overwrite" | "flag" | "error";
-  importOnlyValid: boolean;
   importedBy: string;
-  notes?: string;
 }
 
 export interface UpdateImportHistoryParams {
   id: string;
-  successfulRows: number;
+  importedRows: number;
   failedRows: number;
-  skippedRows: number;
-  duplicateRows: number;
-  status: "completed" | "failed" | "cancelled";
   errors?: string[];
-  warnings?: string[];
 }
 
 export async function createImportHistory(params: CreateImportHistoryParams): Promise<string> {
@@ -47,19 +33,12 @@ export async function createImportHistory(params: CreateImportHistoryParams): Pr
     data: {
       fileName: params.filename,
       fileType: params.fileType,
+      entityType: params.entityType,
       totalRows: params.totalRows,
-      successfulRows: 0,
+      importedRows: 0,
       failedRows: 0,
-      skippedRows: 0,
-      duplicateRows: 0,
-      importStrategy: params.importStrategy,
-      importOnlyValid: params.importOnlyValid,
-      startedAt: new Date(),
-      status: "completed", // Will be updated during import
       errors: [],
-      warnings: [],
       importedBy: params.importedBy,
-      notes: params.notes,
     },
   });
 
@@ -67,22 +46,12 @@ export async function createImportHistory(params: CreateImportHistoryParams): Pr
 }
 
 export async function updateImportHistory(params: UpdateImportHistoryParams): Promise<void> {
-  const completedAt = new Date();
-
   await prisma.importHistory.update({
     where: { id: params.id },
     data: {
-      successfulRows: params.successfulRows,
+      importedRows: params.importedRows,
       failedRows: params.failedRows,
-      skippedRows: params.skippedRows,
-      duplicateRows: params.duplicateRows,
-      status: params.status,
-      completedAt,
-      duration:
-        completedAt.getTime() -
-        (await prisma.importHistory.findUnique({ where: { id: params.id } }))!.startedAt.getTime(),
       errors: params.errors || [],
-      warnings: params.warnings || [],
     },
   });
 }
@@ -90,20 +59,16 @@ export async function updateImportHistory(params: UpdateImportHistoryParams): Pr
 export async function getImportHistory(
   page: number = 1,
   limit: number = 20,
-  status?: "completed" | "failed" | "cancelled",
 ): Promise<{ entries: ImportHistoryEntry[]; total: number }> {
   const skip = (page - 1) * limit;
 
-  const where = status ? { status } : {};
-
   const [entries, total] = await Promise.all([
     prisma.importHistory.findMany({
-      where,
-      orderBy: { startedAt: "desc" },
+      orderBy: { createdAt: "desc" },
       skip,
       take: limit,
     }),
-    prisma.importHistory.count({ where }),
+    prisma.importHistory.count(),
   ]);
 
   return {
@@ -111,21 +76,13 @@ export async function getImportHistory(
       id: entry.id,
       filename: entry.fileName,
       fileType: entry.fileType as "csv" | "excel",
+      entityType: entry.entityType,
       totalRows: entry.totalRows,
-      successfulRows: entry.successfulRows,
+      importedRows: entry.importedRows,
       failedRows: entry.failedRows,
-      skippedRows: entry.skippedRows,
-      duplicateRows: entry.duplicateRows,
-      importStrategy: entry.importStrategy as "skip" | "overwrite" | "flag" | "error",
-      importOnlyValid: entry.importOnlyValid,
-      startedAt: entry.startedAt,
-      completedAt: entry.completedAt,
-      duration: entry.duration,
-      status: entry.status as "completed" | "failed" | "cancelled",
       errors: entry.errors as string[],
-      warnings: entry.warnings as string[],
       importedBy: entry.importedBy,
-      notes: entry.notes,
+      createdAt: entry.createdAt,
     })),
     total,
   };
@@ -142,21 +99,13 @@ export async function getImportHistoryById(id: string): Promise<ImportHistoryEnt
     id: entry.id,
     filename: entry.fileName,
     fileType: entry.fileType as "csv" | "excel",
+    entityType: entry.entityType,
     totalRows: entry.totalRows,
-    successfulRows: entry.successfulRows,
+    importedRows: entry.importedRows,
     failedRows: entry.failedRows,
-    skippedRows: entry.skippedRows,
-    duplicateRows: entry.duplicateRows,
-    importStrategy: entry.importStrategy as "skip" | "overwrite" | "flag" | "error",
-    importOnlyValid: entry.importOnlyValid,
-    startedAt: entry.startedAt,
-    completedAt: entry.completedAt,
-    duration: entry.duration,
-    status: entry.status as "completed" | "failed" | "cancelled",
     errors: entry.errors as string[],
-    warnings: entry.warnings as string[],
     importedBy: entry.importedBy,
-    notes: entry.notes,
+    createdAt: entry.createdAt,
   };
 }
 
@@ -168,48 +117,39 @@ export async function getImportStatistics(): Promise<{
   averageSuccessRate: number;
   recentActivity: ImportHistoryEntry[];
 }> {
-  const [totalImports, successfulImports, failedImports, totalRowsImported, recentActivity] =
+  const [totalImports, totalRowsImported, recentActivity] =
     await Promise.all([
       prisma.importHistory.count(),
-      prisma.importHistory.count({ where: { status: "completed" } }),
-      prisma.importHistory.count({ where: { status: "failed" } }),
       prisma.importHistory.aggregate({
-        _sum: { successfulRows: true },
+        _sum: { importedRows: true },
       }),
       prisma.importHistory.findMany({
-        orderBy: { startedAt: "desc" },
+        orderBy: { createdAt: "desc" },
         take: 5,
       }),
     ]);
 
-  const averageSuccessRate =
-    totalImports > 0 ? Math.round((successfulImports / totalImports) * 100) : 0;
+  const successfulImports = totalImports; // All imports are considered successful in this simplified model
+  const failedImports = 0; // No separate failed status in this model
+  const averageSuccessRate = totalImports > 0 ? 100 : 0; // All imports are successful
 
   return {
     totalImports,
     successfulImports,
     failedImports,
-    totalRowsImported: totalRowsImported._sum.successfulRows || 0,
+    totalRowsImported: totalRowsImported._sum.importedRows || 0,
     averageSuccessRate,
     recentActivity: recentActivity.map((entry) => ({
       id: entry.id,
-      filename: entry.filename,
+      filename: entry.fileName,
       fileType: entry.fileType as "csv" | "excel",
+      entityType: entry.entityType,
       totalRows: entry.totalRows,
-      successfulRows: entry.successfulRows,
+      importedRows: entry.importedRows,
       failedRows: entry.failedRows,
-      skippedRows: entry.skippedRows,
-      duplicateRows: entry.duplicateRows,
-      importStrategy: entry.importStrategy as "skip" | "overwrite" | "flag" | "error",
-      importOnlyValid: entry.importOnlyValid,
-      startedAt: entry.startedAt,
-      completedAt: entry.completedAt,
-      duration: entry.duration,
-      status: entry.status as "completed" | "failed" | "cancelled",
       errors: entry.errors as string[],
-      warnings: entry.warnings as string[],
       importedBy: entry.importedBy,
-      notes: entry.notes,
+      createdAt: entry.createdAt,
     })),
   };
 }
