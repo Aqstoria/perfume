@@ -283,7 +283,10 @@ export async function getAuditLogs(options: {
   ]);
 
   return {
-    logs,
+    logs: logs.map((log) => ({
+      ...log,
+      details: (log.details as Record<string, unknown>) || {},
+    })),
     total,
     page,
     limit,
