@@ -1,6 +1,5 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "./prisma";
-import { Prisma } from "@prisma/client";
 
 export type AuditAction =
   | "CREATE"
