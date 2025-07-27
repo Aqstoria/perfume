@@ -45,7 +45,7 @@ export interface UpdateImportHistoryParams {
 export async function createImportHistory(params: CreateImportHistoryParams): Promise<string> {
   const entry = await prisma.importHistory.create({
     data: {
-      filename: params.filename,
+      fileName: params.filename,
       fileType: params.fileType,
       totalRows: params.totalRows,
       successfulRows: 0,
@@ -109,7 +109,7 @@ export async function getImportHistory(
   return {
     entries: entries.map((entry) => ({
       id: entry.id,
-      filename: entry.filename,
+      filename: entry.fileName,
       fileType: entry.fileType as "csv" | "excel",
       totalRows: entry.totalRows,
       successfulRows: entry.successfulRows,
@@ -140,7 +140,7 @@ export async function getImportHistoryById(id: string): Promise<ImportHistoryEnt
 
   return {
     id: entry.id,
-    filename: entry.filename,
+    filename: entry.fileName,
     fileType: entry.fileType as "csv" | "excel",
     totalRows: entry.totalRows,
     successfulRows: entry.successfulRows,
