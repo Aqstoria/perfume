@@ -108,7 +108,13 @@ async function processProductRow(
   columnMapping: Record<string, string>,
   rowIndex: number,
   overwriteExisting: boolean = false,
-): Promise<{ success: boolean; error?: ImportError; warning?: ImportWarning }> {
+): Promise<{ 
+  success: boolean; 
+  error?: ImportError; 
+  warning?: ImportWarning;
+  skipped?: boolean;
+  duplicate?: boolean;
+}> {
   try {
     // Map CSV columns to product fields
     const mappedData: Record<string, unknown> = {};
@@ -149,6 +155,7 @@ async function processProductRow(
     if (existingProduct && !overwriteExisting) {
       return {
         success: false,
+        skipped: true,
         error: {
           row: rowIndex + 1,
           field: "ean",
@@ -331,12 +338,12 @@ export async function processBatch(
     if (result.status === "fulfilled" && result.value) {
       if (result.value.success) {
         successful++;
-      } else if (result.value.skipped) {
+      } else if ('skipped' in result.value && result.value.skipped) {
         skipped++;
         if (result.value.error) {
           errors.push(result.value.error);
         }
-      } else if (result.value.duplicate) {
+      } else if ('duplicate' in result.value && result.value.duplicate) {
         failed++;
         if (result.value.error) {
           duplicates.push(result.value.error);
