@@ -173,12 +173,13 @@ async function processProductRow(
     return { success: true };
   } catch (error) {
     if (error instanceof z.ZodError) {
+      const firstError = error.errors[0];
       return {
         success: false,
         error: {
           row: rowIndex + 1,
-          field: error.errors[0].path.join("."),
-          message: error.errors[0].message,
+          field: firstError?.path?.join(".") || "unknown",
+          message: firstError?.message || "Validation error",
           data: row,
         },
       };
