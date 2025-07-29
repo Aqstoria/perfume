@@ -10,7 +10,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
-    const status = searchParams.get("status") as "completed" | "failed" | "cancelled" | undefined;
     const id = searchParams.get("id");
 
     // If ID is provided, return specific import
@@ -23,7 +22,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Return paginated list
-    const result = await getImportHistory(page, limit, status);
+    const result = await getImportHistory(page, limit);
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error fetching import history:", error);
