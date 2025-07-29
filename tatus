@@ -1,0 +1,5 @@
+[33md599d24[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m fix: remove Prisma.JsonValue type assertion for audit log details
+[33ma5222d1[m[33m ([m[1;31morigin/main[m[33m)[m fix: add Prisma.JsonValue type assertion for audit log details
+[33m0250d4f[m fix: add null check for lastTag in TagsInput handleKeyDown
+[33m25b5728[m fix: add null check for e.target.value in TagsInput onChange handler
+[33m4533332[m fix: apply same conditional logic to setFilters call in handleClose

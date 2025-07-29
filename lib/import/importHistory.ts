@@ -117,17 +117,16 @@ export async function getImportStatistics(): Promise<{
   averageSuccessRate: number;
   recentActivity: ImportHistoryEntry[];
 }> {
-  const [totalImports, totalRowsImported, recentActivity] =
-    await Promise.all([
-      prisma.importHistory.count(),
-      prisma.importHistory.aggregate({
-        _sum: { importedRows: true },
-      }),
-      prisma.importHistory.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 5,
-      }),
-    ]);
+  const [totalImports, totalRowsImported, recentActivity] = await Promise.all([
+    prisma.importHistory.count(),
+    prisma.importHistory.aggregate({
+      _sum: { importedRows: true },
+    }),
+    prisma.importHistory.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+  ]);
 
   const successfulImports = totalImports; // All imports are considered successful in this simplified model
   const failedImports = 0; // No separate failed status in this model
