@@ -18,7 +18,6 @@ export interface LogContext {
 }
 
 class Logger {
-  private isDevelopment = process.env.NODE_ENV === "development";
   private isProduction = process.env.NODE_ENV === "production";
 
   constructor() {
@@ -28,7 +27,6 @@ class Logger {
         dsn: process.env.SENTRY_DSN,
         environment: process.env.NODE_ENV,
         tracesSampleRate: 0.1,
-        integrations: [new Sentry.BrowserTracing(), new Sentry.Replay()],
       });
     }
   }
@@ -120,13 +118,14 @@ class Logger {
     entityId?: string,
     details?: Record<string, unknown>,
   ) {
-    this.info(`User action: ${action}`, {
+    const context: LogContext = {
       userId,
       action,
-      entity,
-      entityId,
-      details,
-    });
+      ...(entity && { entity }),
+      ...(entityId && { entityId }),
+      ...(details && { details }),
+    };
+    this.info(`User action: ${action}`, context);
   }
 
   logOrderEvent(
@@ -135,12 +134,13 @@ class Logger {
     userId?: string,
     details?: Record<string, unknown>,
   ) {
-    this.info(`Order event: ${event}`, {
+    const context: LogContext = {
       orderId,
       event,
-      userId,
-      details,
-    });
+      ...(userId && { userId }),
+      ...(details && { details }),
+    };
+    this.info(`Order event: ${event}`, context);
   }
 
   logPricingCalculation(customerId: string, productId: string, result: Record<string, unknown>) {
@@ -157,15 +157,23 @@ class Logger {
     details?: Record<string, unknown>,
     severity: "low" | "medium" | "high" = "medium",
   ) {
-    const level = severity === "high" ? "error" : severity === "medium" ? "warn" : "info";
-    this[level](`Security event: ${event}`, {
+    const context: LogContext = {
       event,
       url: request.url,
       method: request.method,
-      userAgent: request.headers.get("user-agent"),
-      ip: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip"),
-      details,
-    });
+      ...(request.headers.get("user-agent") && { userAgent: request.headers.get("user-agent") }),
+      ...(request.headers.get("x-forwarded-for") && { ip: request.headers.get("x-forwarded-for") }),
+      ...(request.headers.get("x-real-ip") && { ip: request.headers.get("x-real-ip") }),
+      ...(details && { details }),
+    };
+
+    if (severity === "high") {
+      this.error(`Security event: ${event}`, undefined, context);
+    } else if (severity === "medium") {
+      this.warn(`Security event: ${event}`, context);
+    } else {
+      this.info(`Security event: ${event}`, context);
+    }
   }
 
   logDatabaseQuery(query: string, duration: number, success: boolean) {
@@ -189,7 +197,7 @@ class Logger {
     if (duration > 5000) {
       this.error(`Slow operation: ${operation} took ${duration}ms`, undefined, context);
     } else if (duration > 1000) {
-      this.warn(`Slow operation: ${operation} took ${duration}ms`, undefined, context);
+      this.warn(`Slow operation: ${operation} took ${duration}ms`, context);
     } else {
       this.debug(`Operation: ${operation} took ${duration}ms`, context);
     }

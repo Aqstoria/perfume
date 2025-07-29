@@ -63,9 +63,7 @@ export async function calculateProductPrice(
   let discountAmount = 0;
 
   // Check for product-specific price override
-  const productPriceOverride = customer.customerPrices.find(
-    (cp: { productId: string; price: number }) => cp.productId === productId,
-  );
+  const productPriceOverride = customer.customerPrices.find((cp) => cp.productId === productId);
 
   if (productPriceOverride) {
     finalPrice = Number(productPriceOverride.price);
@@ -77,7 +75,7 @@ export async function calculateProductPrice(
     // Check for category-specific margin override
     if (product.category) {
       const categoryMargin = customer.customerMargins.find(
-        (cm: { category: string; margin: number }) => cm.category === product.category,
+        (cm) => cm.category === product.category,
       );
       if (categoryMargin) {
         marginPercentage = Number(categoryMargin.margin);
@@ -90,9 +88,7 @@ export async function calculateProductPrice(
 
     // Apply brand-specific discount
     if (product.brand) {
-      const brandDiscount = customer.customerDiscounts.find(
-        (cd: { brand: string; discount: number }) => cd.brand === product.brand,
-      );
+      const brandDiscount = customer.customerDiscounts.find((cd) => cd.brand === product.brand);
       if (brandDiscount) {
         discountAmount = finalPrice * (Number(brandDiscount.discount) / 100);
         finalPrice -= discountAmount;
@@ -101,7 +97,7 @@ export async function calculateProductPrice(
   }
 
   // Apply quantity-based discounts (tiered pricing)
-  const quantityDiscount = await calculateQuantityDiscount(customerId, productId, quantity);
+  const quantityDiscount = await calculateQuantityDiscount(quantity);
 
   if (quantityDiscount > 0) {
     const quantityDiscountAmount = finalPrice * (quantityDiscount / 100);
@@ -125,14 +121,7 @@ export async function calculateProductPrice(
   };
 }
 
-/**
- * Calculate quantity-based discount
- */
-async function calculateQuantityDiscount(
-  customerId: string,
-  productId: string,
-  quantity: number,
-): Promise<number> {
+async function calculateQuantityDiscount(quantity: number): Promise<number> {
   // This is a simplified implementation
   // In a real system, you might have tiered pricing rules
   if (quantity >= 100) return 10; // 10% discount for 100+ items

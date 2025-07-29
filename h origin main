@@ -1,0 +1,3 @@
+[33mad6dfd4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Fix TypeScript error in import history API route
+[33m1f3b5be[m[33m ([m[1;31morigin/main[m[33m)[m Fix import history functionality and add rollback feature
+[33m526df25[m fix: update import history to match Prisma schema fields

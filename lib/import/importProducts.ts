@@ -108,9 +108,9 @@ async function processProductRow(
   columnMapping: Record<string, string>,
   rowIndex: number,
   overwriteExisting: boolean = false,
-): Promise<{ 
-  success: boolean; 
-  error?: ImportError; 
+): Promise<{
+  success: boolean;
+  error?: ImportError;
   warning?: ImportWarning;
   skipped?: boolean;
   duplicate?: boolean;
@@ -338,12 +338,12 @@ export async function processBatch(
     if (result.status === "fulfilled" && result.value) {
       if (result.value.success) {
         successful++;
-      } else if ('skipped' in result.value && result.value.skipped) {
+      } else if ("skipped" in result.value && result.value.skipped) {
         skipped++;
         if (result.value.error) {
           errors.push(result.value.error);
         }
-      } else if ('duplicate' in result.value && result.value.duplicate) {
+      } else if ("duplicate" in result.value && result.value.duplicate) {
         failed++;
         if (result.value.error) {
           duplicates.push(result.value.error);
@@ -370,7 +370,7 @@ export async function processBatch(
         row: startIndex + index + 1,
         field: "unknown",
         message: errorMessage,
-        data: batchItem,
+        data: batchItem as Record<string, unknown>,
       });
     }
   });

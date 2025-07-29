@@ -54,7 +54,7 @@ export async function uploadImage(
     // Validate file
     const validation = validateImageFile(file);
     if (!validation.isValid) {
-      return { url: "", error: validation.error };
+      return { url: "", error: validation.error || "Validation failed" };
     }
 
     // Generate filename

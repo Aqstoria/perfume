@@ -237,7 +237,12 @@ export class FileValidator {
           validationSchema.parse(value);
         } catch (error) {
           if (error instanceof z.ZodError) {
-            errors.push(`Rij ${rowIndex + 1}, kolom "${actualCol}": ${error.errors[0].message}`);
+            const firstError = error.errors[0];
+            if (firstError) {
+              errors.push(`Rij ${rowIndex + 1}, kolom "${actualCol}": ${firstError.message}`);
+            } else {
+              errors.push(`Rij ${rowIndex + 1}, kolom "${actualCol}": Validation error`);
+            }
           }
         }
       }
