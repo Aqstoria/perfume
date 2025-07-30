@@ -30,7 +30,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     // Get customer margins
     const margins = await prisma.customerMargin.findMany({
       where: { customerId: id },
-      orderBy: { category: "asc" },
+      orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json(margins);

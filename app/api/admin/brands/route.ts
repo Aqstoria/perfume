@@ -1,40 +1,39 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(_request: NextRequest) {
   try {
-    // Fetch unique brands from database
-    const brands = await prisma.product.findMany({
+    // Check admin authentication
+    const session = await auth();
+    if (!session?.user || session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Get unique brand names from products
+    const products = await prisma.product.findMany({
+      where: { isActive: true },
       select: {
         brand: true,
       },
-      where: {
-        isActive: true,
-      },
-      distinct: ["brand"],
-      orderBy: {
-        brand: "asc",
-      },
     });
 
-    // Extract brand names and filter out empty/null values
-    const brandNames = brands
-      .map((item: { brand: string }) => item.brand)
-      .filter((brand: string) => brand && brand.trim() !== "")
-      .sort();
+    // Extract unique brand names and filter out null values
+    const brandNames = products
+      .map((product) => product.brand)
+      .filter((brand): brand is string => brand !== null && brand.trim() !== "");
 
-    return NextResponse.json({
-      success: true,
-      brands: brandNames,
-    });
+    const uniqueBrands = [...new Set(brandNames)].sort();
+
+    return NextResponse.json(uniqueBrands);
   } catch (error) {
     console.error("Error fetching brands:", error);
     return NextResponse.json(
       {
-        success: false,
         error: "Failed to fetch brands",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

@@ -1,525 +1,374 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { Product } from "@/types/product";
+import Button from "@/components/ui/Button";
+import Badge from "@/components/ui/Badge";
+import { 
+  Search, 
+  Filter, 
+  Grid3X3, 
+  List, 
+  Eye, 
+  Edit, 
+  Download,
+  Plus
+} from "lucide-react";
 import Link from "next/link";
-import { Search, Grid3X3, List, ChevronLeft, ChevronRight, Plus, Download } from "lucide-react";
 import ProductExportDialog from "@/components/ui/ProductExportDialog";
-
-interface Product {
-  id: string;
-  name: string;
-  brand: string;
-  content: string;
-  ean: string;
-  purchasePrice: number;
-  retailPrice: number;
-  stock: number;
-  maxOrderQuantity: number; // ✅ Gebruikt in UI, wordt gemapped van maxOrderableQuantity
-  rating: number; // ✅ Gebruikt in UI, wordt gemapped van starRating
-  category: string | null;
-  subcategory: string | null;
-  status: string;
-  isAvailable: boolean;
-}
 
 interface ProductListProps {
   products: Product[];
 }
 
-export function ProductList({ products }: ProductListProps) {
+export default function ProductList({ products }: ProductListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedContent, setSelectedContent] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
-  const [availabilityFilter, setAvailabilityFilter] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedAvailability, setSelectedAvailability] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [visibleColumns, setVisibleColumns] = useState({
-    brand: true,
-    content: true,
-    stock: true,
-    price: true,
-    rating: true,
-    status: true,
-  });
-  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
 
-  const itemsPerPage = 10;
-
-  // Available brands, content sizes, and statuses for filters
-  const brands = [...new Set(products.map((p) => p.brand))];
-  const contentSizes = [...new Set(products.map((p) => p.content))];
-  const statuses = [...new Set(products.map((p) => p.status))];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "CONCEPT":
-        return "bg-gray-400";
-      case "ACTIEF":
-        return "bg-green-500";
-      case "NIET_BESCHIKBAAR":
-        return "bg-yellow-500";
-      case "VERVALLEN":
-        return "bg-red-500";
-      default:
-        return "bg-gray-400";
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "CONCEPT":
-        return "Concept";
-      case "ACTIEF":
-        return "Actief";
-      case "NIET_BESCHIKBAAR":
-        return "Niet Beschikbaar";
-      case "VERVALLEN":
-        return "Verlopen";
-      default:
-        return status;
-    }
-  };
+  // Available brands and categories for filters
+  const brands = [
+    ...new Set(products.map((p) => p.brand).filter((brand): brand is string => brand !== null)),
+  ];
+  const categories = [
+    ...new Set(
+      products.map((p) => p.category).filter((category): category is string => category !== null),
+    ),
+  ];
+  const contentSizes = [
+    ...new Set(products.map((p) => p.content).filter((content): content is string => content !== null)),
+  ];
+  const statuses = [
+    ...new Set(products.map((p) => p.status).filter((status): status is string => status !== null)),
+  ];
 
   // Filter and search logic
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      const matchesSearch =
+      const matchesSearch = 
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.ean.includes(searchTerm) ||
-        product.brand.toLowerCase().includes(searchTerm.toLowerCase());
+        product.ean.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.brand && product.brand.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (product.category && product.category.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesBrand = !selectedBrand || product.brand === selectedBrand;
+      const matchesCategory = !selectedCategory || product.category === selectedCategory;
       const matchesContent = !selectedContent || product.content === selectedContent;
       const matchesStatus = !selectedStatus || product.status === selectedStatus;
+      const matchesAvailability = 
+        !selectedAvailability || 
+        (selectedAvailability === "in_stock" && product.stockQuantity > 0) ||
+        (selectedAvailability === "out_of_stock" && product.stockQuantity === 0) ||
+        selectedAvailability === "all";
 
-      let matchesAvailability = true;
-      if (availabilityFilter === "available") {
-        matchesAvailability = product.isAvailable && product.stock > 0;
-      } else if (availabilityFilter === "outOfStock") {
-        matchesAvailability = product.stock === 0;
-      }
-
-      return (
-        matchesSearch && matchesBrand && matchesContent && matchesStatus && matchesAvailability
-      );
+      return matchesSearch && matchesBrand && matchesCategory && matchesContent && matchesStatus && matchesAvailability;
     });
-  }, [products, searchTerm, selectedBrand, selectedContent, selectedStatus, availabilityFilter]);
+  }, [products, searchTerm, selectedBrand, selectedCategory, selectedContent, selectedStatus, selectedAvailability]);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentProducts = filteredProducts.slice(startIndex, endIndex);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "inactive":
+        return "bg-red-100 text-red-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
   };
 
-  const toggleColumn = (column: keyof typeof visibleColumns) => {
-    setVisibleColumns((prev) => ({
-      ...prev,
-      [column]: !prev[column],
-    }));
+  const getStatusText = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "active":
+        return "Actief";
+      case "inactive":
+        return "Inactief";
+      case "pending":
+        return "In behandeling";
+      default:
+        return status || "Onbekend";
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Filters and Search */}
-      <div className="bg-gray-50 rounded-lg p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-4">
-          {/* Search */}
-          <div className="lg:col-span-2">
-            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
-              Zoek Producten
-            </label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <input
-                type="text"
-                id="search"
-                placeholder="Zoek op naam, EAN, of merk..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-
-          {/* Brand Filter */}
-          <div>
-            <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-2">
-              Merk
-            </label>
-            <select
-              id="brand"
-              value={selectedBrand}
-              onChange={(e) => setSelectedBrand(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Alle Merken</option>
-              {brands.map((brand) => (
-                <option key={brand} value={brand}>
-                  {brand}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Content Filter */}
-          <div>
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-              Inhoud
-            </label>
-            <select
-              id="content"
-              value={selectedContent}
-              onChange={(e) => setSelectedContent(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Alle Maten</option>
-              {contentSizes.map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Status Filter */}
-          <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
-            <select
-              id="status"
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Alle Statussen</option>
-              {statuses.map((status) => (
-                <option key={status} value={status}>
-                  {getStatusText(status)}
-                </option>
-              ))}
-            </select>
+      {/* Header with search and filters */}
+      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        <div className="flex-1 max-w-md">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Zoek producten..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
           </div>
         </div>
 
-        {/* Additional Filters */}
-        <div className="mt-4 flex flex-wrap gap-4 items-center">
-          {/* Availability Filter */}
-          <div>
-            <label htmlFor="availability" className="block text-sm font-medium text-gray-700 mb-2">
-              Beschikbaarheid
-            </label>
-            <select
-              id="availability"
-              value={availabilityFilter}
-              onChange={(e) => setAvailabilityFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="all">Alle Producten</option>
-              <option value="available">Op Voorraad</option>
-              <option value="outOfStock">Uitverkocht</option>
-            </select>
-          </div>
-
-          {/* View Mode Toggle */}
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700">Weergave:</span>
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`p-2 rounded-md ${viewMode === "grid" ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-600"}`}
-            >
-              <Grid3X3 className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`p-2 rounded-md ${viewMode === "list" ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-600"}`}
-            >
-              <List className="h-4 w-4" />
-            </button>
-          </div>
-
-          {/* Column Toggles */}
-          <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium text-gray-700">Kolommen:</span>
-            {Object.entries(visibleColumns).map(([column, visible]) => (
-              <label key={column} className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={visible}
-                  onChange={() => toggleColumn(column as keyof typeof visibleColumns)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700 capitalize">{column}</span>
-              </label>
-            ))}
-          </div>
-
-          {/* Export Button */}
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setExportDialogOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-            >
-              <Download className="h-4 w-4" />
-              <span>Exporteren</span>
-            </button>
-          </div>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowExportDialog(true)}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+          <Link href="/admin/products/new">
+            <Button size="sm">
+              <Plus className="w-4 h-4 mr-2" />
+              Nieuw Product
+            </Button>
+          </Link>
         </div>
       </div>
 
-      {/* Results Summary */}
-      <div className="flex justify-between items-center">
-        <p className="text-sm text-gray-600">
-          Toon {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)} van{" "}
-          {filteredProducts.length} producten
-        </p>
-        <Link
-          href="/admin/products/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors inline-flex items-center space-x-2"
+      {/* Filters */}
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+        <select
+          value={selectedBrand || ""}
+          onChange={(e) => setSelectedBrand(e.target.value)}
+          className="border rounded-md px-3 py-2 text-sm"
         >
-          <Plus className="h-4 w-4" />
-          <span>Nieuw Product</span>
-        </Link>
+          <option value="">Alle merken</option>
+          {brands.map((brand) => (
+            <option key={brand} value={brand}>
+              {brand}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={selectedCategory || ""}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="border rounded-md px-3 py-2 text-sm"
+        >
+          <option value="">Alle categorieën</option>
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={selectedContent || ""}
+          onChange={(e) => setSelectedContent(e.target.value)}
+          className="border rounded-md px-3 py-2 text-sm"
+        >
+          <option value="">Alle inhoud</option>
+          {contentSizes.map((content) => (
+            <option key={content} value={content}>
+              {content}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={selectedStatus || ""}
+          onChange={(e) => setSelectedStatus(e.target.value)}
+          className="border rounded-md px-3 py-2 text-sm"
+        >
+          <option value="">Alle statussen</option>
+          {statuses.map((status) => (
+            <option key={status} value={status}>
+              {getStatusText(status)}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={selectedAvailability || ""}
+          onChange={(e) => setSelectedAvailability(e.target.value)}
+          className="border rounded-md px-3 py-2 text-sm"
+        >
+          <option value="">Alle beschikbaarheid</option>
+          <option value="in_stock">Op voorraad</option>
+          <option value="out_of_stock">Uitverkocht</option>
+          <option value="all">Alles</option>
+        </select>
+
+        <div className="flex gap-2">
+          <Button
+            variant={viewMode === "grid" ? "primary" : "secondary"}
+            size="sm"
+            onClick={() => setViewMode("grid")}
+          >
+            <Grid3X3 className="w-4 h-4" />
+          </Button>
+          <Button
+            variant={viewMode === "list" ? "primary" : "secondary"}
+            size="sm"
+            onClick={() => setViewMode("list")}
+          >
+            <List className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
-      {/* Products Grid/List */}
+      {/* Results count */}
+      <div className="text-sm text-gray-600">
+        {filteredProducts.length} van {products.length} producten
+      </div>
+
+      {/* Products grid/list */}
       {viewMode === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {currentProducts.map((product) => (
-            <div
-              key={product.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
-            >
+          {filteredProducts.map((product) => (
+            <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-lg transition-shadow">
               <div className="flex justify-between items-start mb-3">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">
-                    {product.name}
-                  </h3>
-                  {visibleColumns.brand && (
-                    <p className="text-xs text-gray-600 mt-1">{product.brand}</p>
-                  )}
-                </div>
-                <span
-                  className={`px-2 py-1 text-xs rounded-full ${
-                    product.isAvailable && product.stock > 0
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {product.isAvailable && product.stock > 0 ? "Op Voorraad" : "Uitverkocht"}
+                <h3 className="text-lg font-semibold line-clamp-2">
+                  {product.name}
+                </h3>
+                <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(product.status)}`}>
+                  {getStatusText(product.status)}
                 </span>
               </div>
-
-              <div className="space-y-2 text-sm">
-                {visibleColumns.content && (
-                  <p className="text-gray-600">Inhoud: {product.content}</p>
+              <p className="text-sm text-gray-600 mb-3">EAN: {product.ean}</p>
+              
+              <div className="space-y-2 text-sm mb-4">
+                {product.content && (
+                  <p className="text-gray-600">
+                    Inhoud: {product.content}
+                  </p>
                 )}
-                {visibleColumns.stock && <p className="text-gray-600">Voorraad: {product.stock}</p>}
-                {visibleColumns.price && (
-                  <p className="text-gray-600">Prijs: €{product.retailPrice}</p>
+                <p className="text-gray-600">
+                  Voorraad: {product.stockQuantity}
+                </p>
+                <p className="text-gray-600">
+                  Inkoopprijs: €{product.purchasePrice}
+                </p>
+                <p className="text-gray-600">
+                  Verkoopprijs: €{product.retailPrice}
+                </p>
+                {product.category && (
+                  <p className="text-gray-600">
+                    Categorie: {product.category}
+                  </p>
                 )}
-                {visibleColumns.rating && (
-                  <div className="flex items-center">
-                    <span className="text-gray-600 mr-2">Rating:</span>
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <span
-                          key={i}
-                          className={`text-xs ${i < product.rating ? "text-yellow-400" : "text-gray-300"}`}
-                        >
-                          ★
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+                {product.brand && (
+                  <p className="text-gray-600">
+                    Merk: {product.brand}
+                  </p>
+                )}
+                {product.maxOrderQuantity && (
+                  <p className="text-gray-600">
+                    Max bestelling: {product.maxOrderQuantity}
+                  </p>
+                )}
+                {product.rating && (
+                  <p className="text-gray-600">
+                    Rating: {product.rating}/5
+                  </p>
                 )}
               </div>
 
-              <div className="mt-4 flex space-x-2">
-                <Link
-                  href={`/admin/products/${product.id}/edit`}
-                  className="flex-1 bg-blue-600 text-white text-xs py-1 px-2 rounded hover:bg-blue-700 transition-colors text-center"
-                >
-                  Bewerken
+              <div className="flex gap-2">
+                <Link href={`/admin/products/${product.id}`}>
+                  <Button variant="secondary" size="sm">
+                    <Eye className="w-4 h-4 mr-1" />
+                    Bekijk
+                  </Button>
                 </Link>
-                <button className="flex-1 bg-gray-600 text-white text-xs py-1 px-2 rounded hover:bg-gray-700 transition-colors">
-                  Bekijken
-                </button>
+                <Link href={`/admin/products/${product.id}/edit`}>
+                  <Button variant="secondary" size="sm">
+                    <Edit className="w-4 h-4 mr-1" />
+                    Bewerk
+                  </Button>
+                </Link>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Product
-                </th>
-                {visibleColumns.brand && (
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Merk
-                  </th>
-                )}
-                {visibleColumns.content && (
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Inhoud
-                  </th>
-                )}
-                {visibleColumns.stock && (
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Voorraad
-                  </th>
-                )}
-                {visibleColumns.price && (
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Prijs
-                  </th>
-                )}
-                {visibleColumns.rating && (
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Rating
-                  </th>
-                )}
-                {visibleColumns.status && (
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                )}
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Acties
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {currentProducts.map((product) => (
-                <tr key={product.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+        <div className="space-y-4">
+          {filteredProducts.map((product) => (
+            <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <div className="flex items-center gap-4 mb-2">
+                    <h3 className="text-lg font-semibold">{product.name}</h3>
+                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(product.status)}`}>
+                      {getStatusText(product.status)}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm text-gray-600">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                      <div className="text-sm text-gray-500">{product.ean}</div>
+                      <strong>EAN:</strong> {product.ean}
                     </div>
-                  </td>
-                  {visibleColumns.brand && (
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {product.brand}
-                    </td>
-                  )}
-                  {visibleColumns.content && (
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {product.content}
-                    </td>
-                  )}
-                  {visibleColumns.stock && (
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {product.stock}
-                    </td>
-                  )}
-                  {visibleColumns.price && (
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      €{product.retailPrice}
-                    </td>
-                  )}
-                  {visibleColumns.rating && (
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <span
-                            key={i}
-                            className={`text-sm ${i < product.rating ? "text-yellow-400" : "text-gray-300"}`}
-                          >
-                            ★
-                          </span>
-                        ))}
+                    <div>
+                      <strong>Voorraad:</strong> {product.stockQuantity}
+                    </div>
+                    <div>
+                      <strong>Inkoopprijs:</strong> €{product.purchasePrice}
+                    </div>
+                    <div>
+                      <strong>Verkoopprijs:</strong> €{product.retailPrice}
+                    </div>
+                    {product.content && (
+                      <div>
+                        <strong>Inhoud:</strong> {product.content}
                       </div>
-                    </td>
-                  )}
-                  {visibleColumns.status && (
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${getStatusColor(product.status)} text-white`}
-                      >
-                        {getStatusText(product.status)}
-                      </span>
-                    </td>
-                  )}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      <Link
-                        href={`/admin/products/${product.id}/edit`}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Bewerken
-                      </Link>
-                      <button className="text-gray-600 hover:text-gray-900">Bekijken</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <span className="text-sm text-gray-700">
-              Pagina {currentPage} van {totalPages}
-            </span>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-
-          <div className="flex space-x-1">
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const page = i + 1;
-              return (
-                <button
-                  key={page}
-                  onClick={() => handlePageChange(page)}
-                  className={`px-3 py-2 text-sm font-medium rounded-md ${
-                    currentPage === page
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {page}
-                </button>
-              );
-            })}
-          </div>
+                    )}
+                    {product.category && (
+                      <div>
+                        <strong>Categorie:</strong> {product.category}
+                      </div>
+                    )}
+                    {product.brand && (
+                      <div>
+                        <strong>Merk:</strong> {product.brand}
+                      </div>
+                    )}
+                    {product.maxOrderQuantity && (
+                      <div>
+                        <strong>Max bestelling:</strong> {product.maxOrderQuantity}
+                      </div>
+                    )}
+                    {product.rating && (
+                      <div>
+                        <strong>Rating:</strong> {product.rating}/5
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-2 ml-4">
+                  <Link href={`/admin/products/${product.id}`}>
+                    <Button variant="secondary" size="sm">
+                      <Eye className="w-4 h-4 mr-1" />
+                      Bekijk
+                    </Button>
+                  </Link>
+                  <Link href={`/admin/products/${product.id}/edit`}>
+                    <Button variant="secondary" size="sm">
+                      <Edit className="w-4 h-4 mr-1" />
+                      Bewerk
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
       {/* Export Dialog */}
       <ProductExportDialog
-        isOpen={exportDialogOpen}
-        onClose={() => setExportDialogOpen(false)}
+        isOpen={showExportDialog}
+        onClose={() => setShowExportDialog(false)}
         currentFilters={{
           search: searchTerm,
           brand: selectedBrand,
           content: selectedContent,
-          availability: availabilityFilter,
+          availability: selectedAvailability,
         }}
       />
     </div>

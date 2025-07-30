@@ -1,73 +1,72 @@
-// ✅ Forceer dynamische rendering voor admin routes met serverdata
-export const dynamic = "force-dynamic";
-
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ProductList } from "@/components/admin/ProductList";
+import { redirect } from "next/navigation";
+import ProductList from "@/components/admin/ProductList";
 
 export default async function AdminProductsPage() {
-  try {
-    const products = await prisma.product.findMany({
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        brand: true,
-        content: true,
-        ean: true,
-        purchasePrice: true,
-        retailPrice: true,
-        stockQuantity: true,
-        maxOrderableQuantity: true,
-        starRating: true,
-        category: true,
-        subcategory: true,
-        status: true,
-        isActive: true,
-        createdAt: true,
-      },
-    });
+  const session = await auth();
 
-    if (!products || products.length === 0) {
-      console.warn("⚠️ Geen producten gevonden.");
-    }
-
-    // Transform data to match expected format and convert Decimal to number
-    const transformedProducts = products.map((product) => ({
-      id: product.id,
-      name: product.name,
-      brand: product.brand,
-      content: product.content,
-      ean: product.ean,
-      purchasePrice: Number(product.purchasePrice),
-      retailPrice: Number(product.retailPrice),
-      stock: product.stockQuantity,
-      maxOrderQuantity: product.maxOrderableQuantity || 0,
-      rating: product.starRating || 0,
-      category: product.category,
-      subcategory: product.subcategory,
-      status: product.status,
-      isAvailable: product.isActive && product.stockQuantity > 0,
-    }));
-
-    return (
-      <main className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Productbeheer</h1>
-        <ProductList products={transformedProducts} />
-      </main>
-    );
-  } catch (error) {
-    const err = error as Error;
-    console.error("❌ Fout in AdminProductsPage:", {
-      message: err.message,
-      stack: err.stack,
-      name: err.name,
-    });
-
-    return (
-      <main className="p-4 text-red-600">
-        <h1 className="text-xl font-bold mb-4">❌ Server-side fout in AdminProductsPage</h1>
-        <pre>{err.message}</pre>
-      </main>
-    );
+  if (!session?.user || session.user.role !== "ADMIN") {
+    redirect("/login/admin");
   }
+
+  // Fetch products with all necessary fields
+  const products = await prisma.product.findMany({
+    select: {
+      id: true,
+      name: true,
+      content: true,
+      ean: true,
+      purchasePrice: true,
+      retailPrice: true,
+      stockQuantity: true,
+      maxOrderableQuantity: true,
+      starRating: true,
+      category: true,
+      subcategory: true,
+      brand: true,
+      weight: true,
+      dimensions: true,
+      status: true,
+      isActive: true,
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  // Transform products for the component
+  const transformedProducts = products.map((product) => ({
+    id: product.id,
+    name: product.name,
+    content: product.content,
+    ean: product.ean,
+    purchasePrice: product.purchasePrice,
+    retailPrice: product.retailPrice,
+    stockQuantity: product.stockQuantity,
+    maxOrderQuantity: product.maxOrderableQuantity,
+    rating: product.starRating,
+    category: product.category,
+    subcategory: product.subcategory,
+    brand: product.brand,
+    weight: product.weight,
+    dimensions: product.dimensions,
+    status: product.status,
+    isAvailable: product.stockQuantity > 0,
+    createdAt: product.createdAt,
+  }));
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Producten Beheer</h1>
+        <p className="text-gray-600 mt-2">
+          Beheer alle producten in het systeem
+        </p>
+      </div>
+
+      <ProductList products={transformedProducts} />
+    </div>
+  );
 }

@@ -54,7 +54,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     const body = await request.json();
-    const hiddenCategoryData = hiddenCategorySchema.parse(body);
+    const categoryData = hiddenCategorySchema.parse(body);
 
     // Verify customer exists
     const customer = await prisma.customer.findUnique({
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       where: {
         customerId_category: {
           customerId: id,
-          category: hiddenCategoryData.category,
+          category: categoryData.category,
         },
       },
     });
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         {
           error: "Hidden category already exists for this customer",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const hiddenCategory = await prisma.customerHiddenCategory.create({
       data: {
         customerId: id,
-        category: hiddenCategoryData.category,
+        category: categoryData.category,
       },
     });
 
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         details: {
           customerId: id,
           customerName: customer.name,
-          category: hiddenCategoryData.category,
+          category: categoryData.category,
         },
       },
     });
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       hiddenCategory,
     });
   } catch (error) {
-    console.error("Error creating customer hidden category:", error);
+    console.error("Error creating hidden category:", error);
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -120,23 +120,21 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           error: "Invalid hidden category data",
           details: error.errors,
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     return NextResponse.json(
       {
-        error: "Failed to create customer hidden category",
+        error: "Failed to create hidden category",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     // Check admin authentication
@@ -161,22 +159,14 @@ export async function DELETE(
       return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
 
-    // Find and delete the hidden category
-    const hiddenCategory = await prisma.customerHiddenCategory.findUnique({
+    // Delete hidden category
+    const hiddenCategory = await prisma.customerHiddenCategory.delete({
       where: {
         customerId_category: {
           customerId: id,
           category: category,
         },
       },
-    });
-
-    if (!hiddenCategory) {
-      return NextResponse.json({ error: "Hidden category not found" }, { status: 404 });
-    }
-
-    await prisma.customerHiddenCategory.delete({
-      where: { id: hiddenCategory.id },
     });
 
     // Log the action
@@ -199,12 +189,14 @@ export async function DELETE(
       message: "Hidden category deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting customer hidden category:", error);
+    console.error("Error deleting hidden category:", error);
+
     return NextResponse.json(
       {
-        error: "Failed to delete customer hidden category",
+        error: "Failed to delete hidden category",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
