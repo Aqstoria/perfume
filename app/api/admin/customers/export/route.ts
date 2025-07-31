@@ -67,7 +67,9 @@ export async function GET(request: NextRequest) {
       "Merk Kortingen": customer.customerDiscounts
         .map((cd) => `${cd.brand}: ${cd.discount}%`)
         .join("; "),
-      "Verborgen Categorieën": customer.customerHiddenCategories.map((hc) => hc.category).join("; "),
+      "Verborgen Categorieën": customer.customerHiddenCategories
+        .map((hc) => hc.category)
+        .join("; "),
     }));
 
     // Generate CSV

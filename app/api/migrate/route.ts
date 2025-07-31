@@ -11,16 +11,16 @@ export async function POST(request: NextRequest) {
 
     if (action === "migrate") {
       console.log("Starting Prisma migration...");
-      
+
       // Run prisma migrate deploy
       const { stdout, stderr } = await execAsync("npx prisma migrate deploy");
-      
+
       if (stderr) {
         console.error("Migration stderr:", stderr);
       }
-      
+
       console.log("Migration stdout:", stdout);
-      
+
       return NextResponse.json({
         success: true,
         message: "Migration completed successfully",
@@ -28,16 +28,16 @@ export async function POST(request: NextRequest) {
       });
     } else if (action === "push") {
       console.log("Starting Prisma db push...");
-      
+
       // Run prisma db push
       const { stdout, stderr } = await execAsync("npx prisma db push");
-      
+
       if (stderr) {
         console.error("Push stderr:", stderr);
       }
-      
+
       console.log("Push stdout:", stdout);
-      
+
       return NextResponse.json({
         success: true,
         message: "Database push completed successfully",
@@ -45,32 +45,38 @@ export async function POST(request: NextRequest) {
       });
     } else if (action === "seed") {
       console.log("Starting database seeding...");
-      
+
       // Run prisma db seed
       const { stdout, stderr } = await execAsync("npx prisma db seed");
-      
+
       if (stderr) {
         console.error("Seed stderr:", stderr);
       }
-      
+
       console.log("Seed stdout:", stdout);
-      
+
       return NextResponse.json({
         success: true,
         message: "Database seeding completed successfully",
         output: stdout,
       });
     } else {
-      return NextResponse.json({
-        error: "Invalid action. Use 'migrate', 'push', or 'seed'",
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Invalid action. Use 'migrate', 'push', or 'seed'",
+        },
+        { status: 400 },
+      );
     }
   } catch (error) {
     console.error("Migration error:", error);
-    return NextResponse.json({
-      error: "Migration failed",
-      details: error instanceof Error ? error.message : "Unknown error",
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Migration failed",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    );
   }
 }
 
@@ -80,4 +86,4 @@ export async function GET() {
     availableActions: ["migrate", "push", "seed"],
     usage: "POST with { action: 'migrate' | 'push' | 'seed' }",
   });
-} 
+}
