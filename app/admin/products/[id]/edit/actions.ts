@@ -1,6 +1,6 @@
 "use server";
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
@@ -32,10 +32,7 @@ const productSchema = z.object({
   status: z.string().min(1, "Status is verplicht"),
 });
 
-export async function updateProduct(
-  productId: string,
-  formData: FormData,
-) {
+export async function updateProduct(productId: string, formData: FormData) {
 
   try {
     // Check admin authentication
@@ -86,20 +83,20 @@ export async function updateProduct(
       where: { id: productId },
       data: {
         name: validatedData.name,
-        content: validatedData.content ?? null as any,
+        content: validatedData.content ?? (null as any),
         ean: validatedData.ean,
         purchasePrice: parseFloat(validatedData.purchasePrice),
         retailPrice: parseFloat(validatedData.retailPrice),
         stockQuantity: parseInt(validatedData.stockQuantity),
         maxOrderableQuantity: validatedData.maxOrderableQuantity
           ? parseInt(validatedData.maxOrderableQuantity)
-          : null as any,
-        starRating: validatedData.starRating ? parseFloat(validatedData.starRating) : null as any,
+          : (null as any),
+        starRating: validatedData.starRating ? parseFloat(validatedData.starRating) : (null as any),
         category: validatedData.category,
         subcategory: validatedData.subcategory ?? null,
         brand: validatedData.brand,
         weight: validatedData.weight ? parseFloat(validatedData.weight) : null,
-        dimensions: validatedData.dimensions ?? null,
+        dimensions: validatedData.dimensions ?? (null as any),
         status: validatedData.status as any,
       },
     });
