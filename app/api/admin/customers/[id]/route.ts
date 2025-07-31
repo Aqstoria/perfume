@@ -14,7 +14,7 @@ const updateCustomerSchema = z.object({
   minimumOrderItems: z.number().min(0),
 });
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         customerHiddenCategories: true,
         orders: {
           include: {
-            items: {
+            orderItems: {
               include: {
                 product: true,
               },
