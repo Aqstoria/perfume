@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, OrderStatus } from "@prisma/client";
+import { PrismaClient, UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -72,9 +72,7 @@ async function main() {
           starRating: 5,
           category: "Parfum",
           subcategory: "Heren",
-          description: "Een houtachtig aromatische geur met frisheid en diepte.",
-          tags: ["luxe", "houtachtig", "populair"],
-          isActive: true,
+          status: "ACTIVE",
         },
         {
           brand: "Dior",
@@ -88,9 +86,7 @@ async function main() {
           starRating: 5,
           category: "Parfum",
           subcategory: "Heren",
-          description: "Fris, krachtig en mannelijk met ambroxan en peper.",
-          tags: ["fris", "krachtig", "mannelijk"],
-          isActive: true,
+          status: "ACTIVE",
         },
         {
           brand: "Tom Ford",
@@ -104,9 +100,7 @@ async function main() {
           starRating: 4,
           category: "Parfum",
           subcategory: "Unisex",
-          description: "Mysterieus en houtachtig met o.a. agarhout en sandelhout.",
-          tags: ["mysterieus", "houtachtig", "luxe"],
-          isActive: true,
+          status: "ACTIVE",
         },
         {
           brand: "YSL",
@@ -120,9 +114,7 @@ async function main() {
           starRating: 4,
           category: "Parfum",
           subcategory: "Heren",
-          description: "Kruidig oriëntaals met kardemom, lavendel en vetiver.",
-          tags: ["kruidig", "oriëntaals", "spicy"],
-          isActive: true,
+          status: "ACTIVE",
         },
         {
           brand: "Giorgio Armani",
@@ -136,9 +128,7 @@ async function main() {
           starRating: 5,
           category: "Parfum",
           subcategory: "Heren",
-          description: "Marineachtig en krachtig met wierook en bergamot.",
-          tags: ["marine", "krachtig", "fris"],
-          isActive: true,
+          status: "ACTIVE",
         },
         {
           brand: "Creed",
@@ -152,9 +142,7 @@ async function main() {
           starRating: 5,
           category: "Parfum",
           subcategory: "Unisex",
-          description: "Krachtige ananasgeur met houtige basisnoten.",
-          tags: ["luxe", "exclusief", "krachtig"],
-          isActive: true,
+          status: "ACTIVE",
         },
         {
           brand: "Hermès",
@@ -168,9 +156,7 @@ async function main() {
           starRating: 4,
           category: "Parfum",
           subcategory: "Heren",
-          description: "Fris en aards met sinaasappel, vetiver en cederhout.",
-          tags: ["fris", "aards", "natuurlijk"],
-          isActive: true,
+          status: "ACTIVE",
         },
         {
           brand: "Lattafa",
@@ -184,9 +170,7 @@ async function main() {
           starRating: 5,
           category: "Parfum",
           subcategory: "Unisex",
-          description: "Arabische gourmand met kaneel, dadel en vanille.",
-          tags: ["arabisch", "gourmand", "zoet"],
-          isActive: true,
+          status: "ACTIVE",
         },
       ],
     });
@@ -210,9 +194,8 @@ async function main() {
         data: {
           customerId: customer.id,
           userId: buyer.id,
-          status: OrderStatus.PENDING,
+          status: "PENDING",
           totalAmount: 100.0,
-          notes: "Eerste testorder",
           orderItems: {
             create: [
               {
