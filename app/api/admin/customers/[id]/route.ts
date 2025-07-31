@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createCustomerSchema } from "@/lib/validations/customer";
+import { z } from "zod";
+
+// Schema for customer update
+const updateCustomerSchema = z.object({
+  name: z.string().min(1, "Naam is verplicht"),
+  email: z.string().email("Geldig email adres is verplicht"),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  generalMargin: z.number().min(0).max(100),
+  minimumOrderValue: z.number().min(0),
+  minimumOrderItems: z.number().min(0),
+});
 
 export async function GET(
   request: NextRequest,
@@ -71,7 +82,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const customerData = createCustomerSchema.parse(body);
+    const customerData = updateCustomerSchema.parse(body);
 
     // Check if email already exists for another customer
     const existingCustomer = await prisma.customer.findFirst({
