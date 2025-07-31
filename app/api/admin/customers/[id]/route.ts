@@ -14,10 +14,7 @@ const updateCustomerSchema = z.object({
   minimumOrderItems: z.number().min(0),
 });
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
@@ -53,26 +50,17 @@ export async function GET(
     });
 
     if (!customer) {
-      return NextResponse.json(
-        { error: "Customer not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
 
     return NextResponse.json(customer);
   } catch (error) {
     console.error("Error fetching customer:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch customer" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch customer" }, { status: 500 });
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Check admin authentication
     const session = await auth();
@@ -93,10 +81,7 @@ export async function PUT(
     });
 
     if (existingCustomer) {
-      return NextResponse.json(
-        { error: "Email adres is al in gebruik" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Email adres is al in gebruik" }, { status: 400 });
     }
 
     // Update customer
@@ -138,16 +123,13 @@ export async function PUT(
     return NextResponse.json(customer);
   } catch (error) {
     console.error("Error updating customer:", error);
-    return NextResponse.json(
-      { error: "Failed to update customer" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update customer" }, { status: 500 });
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Check admin authentication
@@ -171,10 +153,7 @@ export async function DELETE(
     });
 
     if (!customerWithOrders) {
-      return NextResponse.json(
-        { error: "Customer not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
 
     if (customerWithOrders._count.orders > 0) {
@@ -182,7 +161,7 @@ export async function DELETE(
         {
           error: "Cannot delete customer with existing orders",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -209,9 +188,6 @@ export async function DELETE(
     return NextResponse.json({ message: "Customer deleted successfully" });
   } catch (error) {
     console.error("Error deleting customer:", error);
-    return NextResponse.json(
-      { error: "Failed to delete customer" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete customer" }, { status: 500 });
   }
 }
