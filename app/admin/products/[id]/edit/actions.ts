@@ -33,10 +33,9 @@ const productSchema = z.object({
 });
 
 export async function updateProduct(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  productId: string,
+  formData: FormData,
 ) {
-  const { id: productId } = await params;
 
   try {
     // Check admin authentication
@@ -45,7 +44,6 @@ export async function updateProduct(
       throw new Error("Unauthorized: Admin access required");
     }
 
-    const formData = await request.formData();
     const rawData = {
       name: formData.get("name") as string,
       content: formData.get("content") as string,
@@ -88,21 +86,21 @@ export async function updateProduct(
       where: { id: productId },
       data: {
         name: validatedData.name,
-        content: validatedData.content || null,
+        content: validatedData.content ?? null as any,
         ean: validatedData.ean,
         purchasePrice: parseFloat(validatedData.purchasePrice),
         retailPrice: parseFloat(validatedData.retailPrice),
         stockQuantity: parseInt(validatedData.stockQuantity),
         maxOrderableQuantity: validatedData.maxOrderableQuantity
           ? parseInt(validatedData.maxOrderableQuantity)
-          : null,
-        starRating: validatedData.starRating ? parseFloat(validatedData.starRating) : null,
+          : null as any,
+        starRating: validatedData.starRating ? parseFloat(validatedData.starRating) : null as any,
         category: validatedData.category,
-        subcategory: validatedData.subcategory || null,
+        subcategory: validatedData.subcategory ?? null,
         brand: validatedData.brand,
         weight: validatedData.weight ? parseFloat(validatedData.weight) : null,
-        dimensions: validatedData.dimensions || null,
-        status: validatedData.status,
+        dimensions: validatedData.dimensions ?? null,
+        status: validatedData.status as any,
       },
     });
 
