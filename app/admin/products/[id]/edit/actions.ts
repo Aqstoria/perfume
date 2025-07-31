@@ -33,7 +33,6 @@ const productSchema = z.object({
 });
 
 export async function updateProduct(productId: string, formData: FormData) {
-
   try {
     // Check admin authentication
     const session = await auth();
