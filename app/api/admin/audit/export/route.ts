@@ -17,7 +17,11 @@ export async function GET(request: NextRequest) {
     const entity = searchParams.get("entity");
 
     // Build where clause
-    const where: any = {};
+    const where: {
+      timestamp?: { gte: Date; lte: Date };
+      action?: string;
+      entity?: string;
+    } = {};
 
     if (startDate && endDate) {
       where.timestamp = {

@@ -32,7 +32,10 @@ const productSchema = z.object({
   status: z.string().min(1, "Status is verplicht"),
 });
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function updateProduct(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const { id: productId } = await params;
 
   try {

@@ -3,8 +3,7 @@
 import { useState, useMemo } from "react";
 import { Product } from "@/types/product";
 import Button from "@/components/ui/Button";
-import Badge from "@/components/ui/Badge";
-import { Search, Filter, Grid3X3, List, Eye, Edit, Download, Plus } from "lucide-react";
+import { Search, Grid3X3, List, Eye, Edit, Download, Plus } from "lucide-react";
 import Link from "next/link";
 import ProductExportDialog from "@/components/ui/ProductExportDialog";
 
