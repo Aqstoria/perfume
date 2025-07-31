@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       include: {
         customerMargins: true,
         customerDiscounts: true,
-        hiddenCategories: true,
+        customerHiddenCategories: true,
       },
       orderBy: { name: "asc" },
     });
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
       "Merk Kortingen": customer.customerDiscounts
         .map((cd) => `${cd.brand}: ${cd.discount}%`)
         .join("; "),
-      "Verborgen Categorieën": customer.hiddenCategories.map((hc) => hc.category).join("; "),
+      "Verborgen Categorieën": customer.customerHiddenCategories.map((hc) => hc.category).join("; "),
     }));
 
     // Generate CSV
