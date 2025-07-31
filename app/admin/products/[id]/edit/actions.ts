@@ -32,10 +32,7 @@ const productSchema = z.object({
   status: z.string().min(1, "Status is verplicht"),
 });
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id: productId } = await params;
 
   try {
@@ -79,7 +76,7 @@ export async function POST(
         {
           error: "Een product met deze EAN bestaat al",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -96,9 +93,7 @@ export async function POST(
         maxOrderableQuantity: validatedData.maxOrderableQuantity
           ? parseInt(validatedData.maxOrderableQuantity)
           : null,
-        starRating: validatedData.starRating
-          ? parseFloat(validatedData.starRating)
-          : null,
+        starRating: validatedData.starRating ? parseFloat(validatedData.starRating) : null,
         category: validatedData.category,
         subcategory: validatedData.subcategory || null,
         brand: validatedData.brand,
@@ -138,7 +133,7 @@ export async function POST(
           error: "Ongeldige productgegevens",
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -147,7 +142,7 @@ export async function POST(
         error: "Fout bij het bijwerken van het product",
         details: error instanceof Error ? error.message : "Onbekende fout",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -4,16 +4,7 @@ import { useState, useMemo } from "react";
 import { Product } from "@/types/product";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
-import { 
-  Search, 
-  Filter, 
-  Grid3X3, 
-  List, 
-  Eye, 
-  Edit, 
-  Download,
-  Plus
-} from "lucide-react";
+import { Search, Filter, Grid3X3, List, Eye, Edit, Download, Plus } from "lucide-react";
 import Link from "next/link";
 import ProductExportDialog from "@/components/ui/ProductExportDialog";
 
@@ -41,7 +32,9 @@ export default function ProductList({ products }: ProductListProps) {
     ),
   ];
   const contentSizes = [
-    ...new Set(products.map((p) => p.content).filter((content): content is string => content !== null)),
+    ...new Set(
+      products.map((p) => p.content).filter((content): content is string => content !== null),
+    ),
   ];
   const statuses = [
     ...new Set(products.map((p) => p.status).filter((status): status is string => status !== null)),
@@ -50,7 +43,7 @@ export default function ProductList({ products }: ProductListProps) {
   // Filter and search logic
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      const matchesSearch = 
+      const matchesSearch =
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.ean.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (product.brand && product.brand.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -60,15 +53,30 @@ export default function ProductList({ products }: ProductListProps) {
       const matchesCategory = !selectedCategory || product.category === selectedCategory;
       const matchesContent = !selectedContent || product.content === selectedContent;
       const matchesStatus = !selectedStatus || product.status === selectedStatus;
-      const matchesAvailability = 
-        !selectedAvailability || 
+      const matchesAvailability =
+        !selectedAvailability ||
         (selectedAvailability === "in_stock" && product.stockQuantity > 0) ||
         (selectedAvailability === "out_of_stock" && product.stockQuantity === 0) ||
         selectedAvailability === "all";
 
-      return matchesSearch && matchesBrand && matchesCategory && matchesContent && matchesStatus && matchesAvailability;
+      return (
+        matchesSearch &&
+        matchesBrand &&
+        matchesCategory &&
+        matchesContent &&
+        matchesStatus &&
+        matchesAvailability
+      );
     });
-  }, [products, searchTerm, selectedBrand, selectedCategory, selectedContent, selectedStatus, selectedAvailability]);
+  }, [
+    products,
+    searchTerm,
+    selectedBrand,
+    selectedCategory,
+    selectedContent,
+    selectedStatus,
+    selectedAvailability,
+  ]);
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -114,11 +122,7 @@ export default function ProductList({ products }: ProductListProps) {
         </div>
 
         <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setShowExportDialog(true)}
-          >
+          <Button variant="secondary" size="sm" onClick={() => setShowExportDialog(true)}>
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
@@ -223,52 +227,31 @@ export default function ProductList({ products }: ProductListProps) {
       {viewMode === "grid" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProducts.map((product) => (
-            <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-lg transition-shadow">
+            <div
+              key={product.id}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-lg transition-shadow"
+            >
               <div className="flex justify-between items-start mb-3">
-                <h3 className="text-lg font-semibold line-clamp-2">
-                  {product.name}
-                </h3>
-                <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(product.status)}`}>
+                <h3 className="text-lg font-semibold line-clamp-2">{product.name}</h3>
+                <span
+                  className={`px-2 py-1 text-xs rounded-full ${getStatusColor(product.status)}`}
+                >
                   {getStatusText(product.status)}
                 </span>
               </div>
               <p className="text-sm text-gray-600 mb-3">EAN: {product.ean}</p>
-              
+
               <div className="space-y-2 text-sm mb-4">
-                {product.content && (
-                  <p className="text-gray-600">
-                    Inhoud: {product.content}
-                  </p>
-                )}
-                <p className="text-gray-600">
-                  Voorraad: {product.stockQuantity}
-                </p>
-                <p className="text-gray-600">
-                  Inkoopprijs: €{product.purchasePrice}
-                </p>
-                <p className="text-gray-600">
-                  Verkoopprijs: €{product.retailPrice}
-                </p>
-                {product.category && (
-                  <p className="text-gray-600">
-                    Categorie: {product.category}
-                  </p>
-                )}
-                {product.brand && (
-                  <p className="text-gray-600">
-                    Merk: {product.brand}
-                  </p>
-                )}
+                {product.content && <p className="text-gray-600">Inhoud: {product.content}</p>}
+                <p className="text-gray-600">Voorraad: {product.stockQuantity}</p>
+                <p className="text-gray-600">Inkoopprijs: €{product.purchasePrice}</p>
+                <p className="text-gray-600">Verkoopprijs: €{product.retailPrice}</p>
+                {product.category && <p className="text-gray-600">Categorie: {product.category}</p>}
+                {product.brand && <p className="text-gray-600">Merk: {product.brand}</p>}
                 {product.maxOrderQuantity && (
-                  <p className="text-gray-600">
-                    Max bestelling: {product.maxOrderQuantity}
-                  </p>
+                  <p className="text-gray-600">Max bestelling: {product.maxOrderQuantity}</p>
                 )}
-                {product.rating && (
-                  <p className="text-gray-600">
-                    Rating: {product.rating}/5
-                  </p>
-                )}
+                {product.rating && <p className="text-gray-600">Rating: {product.rating}/5</p>}
               </div>
 
               <div className="flex gap-2">
@@ -291,12 +274,17 @@ export default function ProductList({ products }: ProductListProps) {
       ) : (
         <div className="space-y-4">
           {filteredProducts.map((product) => (
-            <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div
+              key={product.id}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+            >
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-2">
                     <h3 className="text-lg font-semibold">{product.name}</h3>
-                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(product.status)}`}>
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${getStatusColor(product.status)}`}
+                    >
                       {getStatusText(product.status)}
                     </span>
                   </div>

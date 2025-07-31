@@ -18,14 +18,14 @@ export async function GET(request: NextRequest) {
 
     // Build where clause
     const where: any = {};
-    
+
     if (startDate && endDate) {
       where.timestamp = {
         gte: new Date(startDate),
         lte: new Date(endDate),
       };
     }
-    
+
     if (action) {
       where.action = action;
     }
@@ -51,14 +51,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Convert to CSV format
-    const csvHeaders = [
-      "Timestamp",
-      "User",
-      "Role",
-      "Action",
-      "Target",
-      "Details",
-    ];
+    const csvHeaders = ["Timestamp", "User", "Role", "Action", "Target", "Details"];
 
     const csvRows = logs.map((log) => [
       log.timestamp.toISOString(),
@@ -69,10 +62,7 @@ export async function GET(request: NextRequest) {
       JSON.stringify(log.details),
     ]);
 
-    const csvContent = [
-      csvHeaders.join(","),
-      ...csvRows.map((row) => row.join(",")),
-    ].join("\n");
+    const csvContent = [csvHeaders.join(","), ...csvRows.map((row) => row.join(","))].join("\n");
 
     // Return CSV file
     return new NextResponse(csvContent, {
@@ -88,8 +78,7 @@ export async function GET(request: NextRequest) {
         error: "Failed to export audit logs",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

@@ -33,7 +33,7 @@ export async function GET(_request: NextRequest) {
         error: "Failed to fetch brands",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

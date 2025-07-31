@@ -16,4 +16,4 @@ export interface Product {
   status: string;
   isAvailable: boolean;
   createdAt: Date;
-} 
+}

@@ -80,7 +80,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         {
           error: "Hidden category already exists for this customer",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           error: "Invalid hidden category data",
           details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -129,12 +129,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         error: "Failed to create hidden category",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const { id } = await params;
   try {
     // Check admin authentication
@@ -196,7 +199,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
         error: "Failed to delete hidden category",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
