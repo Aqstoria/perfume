@@ -25,6 +25,7 @@ model User {
   accessUrls    UserAccessUrl[]
   importHistory ImportHistory[]
   exportHistory ExportHistory[]
+  importRollbacks ImportRollback[]
 
   @@map("users")
 }
@@ -244,6 +245,7 @@ model ImportHistory {
 
   user User @relation(fields: [userId], references: [id])
   snapshot ImportSnapshot? @relation(fields: [snapshotId], references: [id])
+  importRollbacks ImportRollback[]
 
   @@map("import_history")
 }
